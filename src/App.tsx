@@ -83,6 +83,9 @@ import { ViewModal } from "./components/ViewModal"
 import { ViewDetailsPage } from "./components/ViewDetailsPage"
 import { UserManagement } from "./components/UserManagement"
 import { FieldTripDashboard } from "./components/FieldTripDashboard"
+import { TripManagement } from "./components/TripManagement"
+import { FieldTripPaymentReports } from "./components/FieldTripPaymentReports"
+import { FieldTripReceipts } from "./components/FieldTripReceipts"
 
 const menuItems = {
   tuition: [
@@ -252,11 +255,11 @@ export default function App() {
       case "field-trip-dashboard":
         return <FieldTripDashboard />
       case "field-trip-management":
-        return <div className="text-center p-8"><h2>Field Trip Management</h2><p className="text-muted-foreground">Coming soon...</p></div>
+        return <TripManagement />
       case "field-trip-payment-reports":
-        return <div className="text-center p-8"><h2>Field Trip Payment Reports</h2><p className="text-muted-foreground">Coming soon...</p></div>
+        return <FieldTripPaymentReports />
       case "field-trip-receipts":
-        return <div className="text-center p-8"><h2>Field Trip Receipts</h2><p className="text-muted-foreground">Coming soon...</p></div>
+        return <FieldTripReceipts />
       case "invoice-management":
         return <InvoiceManagement onNavigateToSubPage={navigateToSubPage} onNavigateToView={navigateToViewDetails} />
       case "invoice-creation":
