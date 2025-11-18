@@ -46,6 +46,11 @@ import { Textarea } from "./ui/textarea"
 import { toast } from "sonner"
 import { format } from "date-fns"
 
+interface Participant {
+  yearGroup: string
+  room: string
+}
+
 interface Trip {
   id: string
   name: string
@@ -57,7 +62,7 @@ interface Trip {
   price: number
   description?: string
   status: "draft" | "open" | "full" | "closed" | "completed" | "cancelled"
-  yearGroups: string[]
+  participants: Participant[]
   campus: string
   createdAt: string
   updatedAt: string
@@ -74,7 +79,10 @@ const mockTrips: Trip[] = [
     price: 3000,
     description: "Educational trip to National Science Museum",
     status: "open",
-    yearGroups: ["Year 4", "Year 5"],
+    participants: [
+      { yearGroup: "Year 4", room: "Room A" },
+      { yearGroup: "Year 5", room: "Room B" }
+    ],
     campus: "Thonburi",
     createdAt: "2024-01-10",
     updatedAt: "2024-01-15"
@@ -89,7 +97,10 @@ const mockTrips: Trip[] = [
     price: 3500,
     description: "Historical and cultural exploration",
     status: "full",
-    yearGroups: ["Year 6", "Year 7"],
+    participants: [
+      { yearGroup: "Year 6", room: "Room C" },
+      { yearGroup: "Year 7", room: "Room D" }
+    ],
     campus: "Suvarnabhumi",
     createdAt: "2024-01-12",
     updatedAt: "2024-01-18"
@@ -104,7 +115,10 @@ const mockTrips: Trip[] = [
     price: 2500,
     description: "River cruise and temple visits",
     status: "completed",
-    yearGroups: ["Year 8", "Year 9"],
+    participants: [
+      { yearGroup: "Year 8", room: "Room E" },
+      { yearGroup: "Year 9", room: "Room F" }
+    ],
     campus: "Thonburi",
     createdAt: "2024-01-05",
     updatedAt: "2024-02-10"
@@ -119,7 +133,11 @@ const mockTrips: Trip[] = [
     price: 4000,
     description: "Wildlife and marine park visit",
     status: "open",
-    yearGroups: ["Year 1", "Year 2", "Year 3"],
+    participants: [
+      { yearGroup: "Year 1", room: "Room 1A" },
+      { yearGroup: "Year 2", room: "Room 2A" },
+      { yearGroup: "Year 3", room: "Room 3A" }
+    ],
     campus: "Suvarnabhumi",
     createdAt: "2024-01-20",
     updatedAt: "2024-01-25"
@@ -134,7 +152,10 @@ const mockTrips: Trip[] = [
     price: 3800,
     description: "UNESCO World Heritage Site visit",
     status: "draft",
-    yearGroups: ["Year 10", "Year 11"],
+    participants: [
+      { yearGroup: "Year 10", room: "Room 10A" },
+      { yearGroup: "Year 11", room: "Room 11A" }
+    ],
     campus: "Thonburi",
     createdAt: "2024-01-25",
     updatedAt: "2024-01-25"
@@ -170,9 +191,13 @@ export function TripManagement() {
     price: 0,
     description: "",
     status: "draft",
-    yearGroups: [],
+    participants: [],
     campus: ""
   })
+
+  // Participant selection state
+  const [selectedYearGroup, setSelectedYearGroup] = useState<string>("")
+  const [selectedRoom, setSelectedRoom] = useState<string>("")
 
   const getStatusBadge = (status: Trip['status']) => {
     const variants = {
@@ -188,7 +213,6 @@ export function TripManagement() {
 
   const filteredTrips = trips.filter(trip => {
     const matchesSearch = trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         trip.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          trip.id.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || trip.status === statusFilter
     const matchesCampus = campusFilter === "all" || trip.campus === campusFilter
@@ -196,7 +220,7 @@ export function TripManagement() {
   })
 
   const handleAddTrip = () => {
-    if (!formData.name || !formData.destination || !formData.date || !formData.campus) {
+    if (!formData.name || !formData.date || !formData.campus) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -212,7 +236,7 @@ export function TripManagement() {
       price: formData.price || 0,
       description: formData.description,
       status: formData.status as Trip['status'] || "draft",
-      yearGroups: formData.yearGroups || [],
+      participants: formData.participants || [],
       campus: formData.campus!,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -225,7 +249,7 @@ export function TripManagement() {
   }
 
   const handleEditTrip = () => {
-    if (!selectedTrip || !formData.name || !formData.destination || !formData.date) {
+    if (!selectedTrip || !formData.name || !formData.date) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -273,7 +297,7 @@ export function TripManagement() {
       price: trip.price,
       description: trip.description,
       status: trip.status,
-      yearGroups: trip.yearGroups,
+      participants: trip.participants,
       campus: trip.campus
     })
     setIsEditDialogOpen(true)
@@ -299,24 +323,41 @@ export function TripManagement() {
       price: 0,
       description: "",
       status: "draft",
-      yearGroups: [],
+      participants: [],
       campus: ""
     })
+    setSelectedYearGroup("")
+    setSelectedRoom("")
   }
 
-  const handleYearGroupToggle = (yearGroup: string) => {
-    const currentYearGroups = formData.yearGroups || []
-    if (currentYearGroups.includes(yearGroup)) {
-      setFormData({
-        ...formData,
-        yearGroups: currentYearGroups.filter(y => y !== yearGroup)
-      })
-    } else {
-      setFormData({
-        ...formData,
-        yearGroups: [...currentYearGroups, yearGroup]
-      })
+  const handleAddParticipant = () => {
+    if (!selectedYearGroup || !selectedRoom) {
+      toast.error("Please select both year group and room")
+      return
     }
+
+    const currentParticipants = formData.participants || []
+
+    // Check if this year group already exists
+    if (currentParticipants.some(p => p.yearGroup === selectedYearGroup)) {
+      toast.error("This year group is already added")
+      return
+    }
+
+    setFormData({
+      ...formData,
+      participants: [...currentParticipants, { yearGroup: selectedYearGroup, room: selectedRoom }]
+    })
+    setSelectedYearGroup("")
+    setSelectedRoom("")
+  }
+
+  const handleRemoveParticipant = (index: number) => {
+    const currentParticipants = formData.participants || []
+    setFormData({
+      ...formData,
+      participants: currentParticipants.filter((_, i) => i !== index)
+    })
   }
 
   const exportTrips = () => {
@@ -352,7 +393,7 @@ export function TripManagement() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search trips by name, destination, or ID..."
+                  placeholder="Search trips by name or ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
@@ -403,7 +444,7 @@ export function TripManagement() {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Trip Name</TableHead>
-                  <TableHead>Destination</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Campus</TableHead>
                   <TableHead>Capacity</TableHead>
@@ -427,14 +468,13 @@ export function TripManagement() {
                         <div>
                           <div className="font-medium">{trip.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {trip.yearGroups.join(", ")}
+                            {trip.participants.map(p => `${p.yearGroup} (${p.room})`).join(", ")}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          {trip.destination}
+                        <div className="text-sm text-muted-foreground">
+                          {trip.destination || "N/A"}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -514,12 +554,12 @@ export function TripManagement() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="destination">Destination *</Label>
+              <Label htmlFor="destination">Description</Label>
               <Input
                 id="destination"
                 value={formData.destination}
                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                placeholder="e.g., National Science Museum, Pathum Thani"
+                placeholder="e.g., Educational trip to the museum"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -533,7 +573,7 @@ export function TripManagement() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="endDate">End Date (Optional)</Label>
+                <Label htmlFor="endDate">Payment Deadline Date</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -591,28 +631,61 @@ export function TripManagement() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Year Groups</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {yearGroupOptions.map(yearGroup => (
+              <Label>Participants</Label>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <Select value={selectedYearGroup} onValueChange={setSelectedYearGroup}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearGroupOptions.map(year => (
+                        <SelectItem key={year} value={year}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Room (e.g., Room A)"
+                    value={selectedRoom}
+                    onChange={(e) => setSelectedRoom(e.target.value)}
+                  />
                   <Button
-                    key={yearGroup}
                     type="button"
-                    variant={formData.yearGroups?.includes(yearGroup) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleYearGroupToggle(yearGroup)}
+                    variant="outline"
+                    onClick={handleAddParticipant}
                   >
-                    {yearGroup}
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add
                   </Button>
-                ))}
+                </div>
+                {formData.participants && formData.participants.length > 0 && (
+                  <div className="border rounded-md p-3 space-y-2">
+                    {formData.participants.map((participant, index) => (
+                      <div key={index} className="flex items-center justify-between bg-muted px-3 py-2 rounded">
+                        <span className="text-sm">
+                          {participant.yearGroup} - {participant.room}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveParticipant(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Consent Form Link</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Brief description of the trip..."
+                placeholder="e.g., https://forms.google.com/..."
                 rows={3}
               />
             </div>
@@ -648,11 +721,12 @@ export function TripManagement() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-destination">Destination *</Label>
+              <Label htmlFor="edit-destination">Description</Label>
               <Input
                 id="edit-destination"
                 value={formData.destination}
                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                placeholder="e.g., Educational trip to the museum"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -666,7 +740,7 @@ export function TripManagement() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-endDate">End Date (Optional)</Label>
+                <Label htmlFor="edit-endDate">Payment Deadline Date</Label>
                 <Input
                   id="edit-endDate"
                   type="date"
@@ -725,27 +799,61 @@ export function TripManagement() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Year Groups</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {yearGroupOptions.map(yearGroup => (
+              <Label>Participants</Label>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <Select value={selectedYearGroup} onValueChange={setSelectedYearGroup}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearGroupOptions.map(year => (
+                        <SelectItem key={year} value={year}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Room (e.g., Room A)"
+                    value={selectedRoom}
+                    onChange={(e) => setSelectedRoom(e.target.value)}
+                  />
                   <Button
-                    key={yearGroup}
                     type="button"
-                    variant={formData.yearGroups?.includes(yearGroup) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleYearGroupToggle(yearGroup)}
+                    variant="outline"
+                    onClick={handleAddParticipant}
                   >
-                    {yearGroup}
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add
                   </Button>
-                ))}
+                </div>
+                {formData.participants && formData.participants.length > 0 && (
+                  <div className="border rounded-md p-3 space-y-2">
+                    {formData.participants.map((participant, index) => (
+                      <div key={index} className="flex items-center justify-between bg-muted px-3 py-2 rounded">
+                        <span className="text-sm">
+                          {participant.yearGroup} - {participant.room}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveParticipant(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description">Consent Form Link</Label>
               <Textarea
                 id="edit-description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="e.g., https://forms.google.com/..."
                 rows={3}
               />
             </div>
@@ -774,7 +882,6 @@ export function TripManagement() {
             <div className="py-4">
               <div className="p-4 bg-muted rounded-lg space-y-2">
                 <p><strong>Trip:</strong> {selectedTrip.name}</p>
-                <p><strong>Destination:</strong> {selectedTrip.destination}</p>
                 <p><strong>Date:</strong> {format(new Date(selectedTrip.date), "MMM dd, yyyy")}</p>
                 {selectedTrip.registered > 0 && (
                   <p className="text-red-600 text-sm font-medium">
@@ -825,10 +932,9 @@ export function TripManagement() {
                 <p className="font-medium">{selectedTrip.name}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Destination</Label>
-                <p className="font-medium flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {selectedTrip.destination}
+                <Label className="text-muted-foreground">Description</Label>
+                <p className="font-medium">
+                  {selectedTrip.destination || "N/A"}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -864,17 +970,26 @@ export function TripManagement() {
                 </div>
               </div>
               <div>
-                <Label className="text-muted-foreground">Year Groups</Label>
-                <div className="flex gap-2 mt-1">
-                  {selectedTrip.yearGroups.map((year, idx) => (
-                    <Badge key={idx} variant="outline">{year}</Badge>
+                <Label className="text-muted-foreground">Participants</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedTrip.participants.map((participant, idx) => (
+                    <Badge key={idx} variant="outline">
+                      {participant.yearGroup} ({participant.room})
+                    </Badge>
                   ))}
                 </div>
               </div>
               {selectedTrip.description && (
                 <div>
-                  <Label className="text-muted-foreground">Description</Label>
-                  <p className="text-sm">{selectedTrip.description}</p>
+                  <Label className="text-muted-foreground">Consent Form Link</Label>
+                  <a
+                    href={selectedTrip.description}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-sm break-all"
+                  >
+                    {selectedTrip.description}
+                  </a>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
