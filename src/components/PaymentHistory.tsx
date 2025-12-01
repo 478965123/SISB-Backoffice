@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
@@ -23,15 +23,16 @@ interface PaymentRecord {
   studentId: string
   studentGrade: string
   studentRoom: string
-  schoolLevel: "nk" | "primary" | "secondary"
+  schoolLevel: "nk" | "pri" | "sf"
   amount: number
   paymentType: "yearly" | "termly"
   paymentMethod: string
   paymentChannel: "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank"
   payerName: string
-  status: "paid" | "partial" | "unpaid" | "cancelled" | "overdue"
+  status: "paid" | "unpaid" | "cancelled" | "overdue"
   transactionDate: Date
   parentType?: "internal" | "external"
+  activityType?: "ECA" | "EAS"
   referenceNumber?: string
   paymentDescription?: string
   dueDate?: Date
@@ -47,7 +48,7 @@ const generateMockPayments = (): PaymentRecord[] => {
   const paymentMethods = ["Credit Card", "PromptPay", "Bank Counter", "WeChat Pay", "Bank Transfer", "Cash"]
   const paymentChannels: ("credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank")[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
   const payerNames = ["Mr. John Smith", "Mrs. Sarah Johnson", "Mr. David Williams", "Ms. Emily Brown", "Mr. Michael Davis", "Mrs. Lisa Garcia", "Mr. James Wilson", "Ms. Maria Rodriguez"]
-  const statuses: ("paid" | "partial" | "unpaid" | "cancelled" | "overdue")[] = ["paid", "paid", "paid", "partial", "unpaid", "cancelled", "overdue"]
+  const statuses: ("paid" | "unpaid" | "cancelled" | "overdue")[] = ["paid", "paid", "paid", "unpaid", "cancelled", "overdue"]
 
   const payments: PaymentRecord[] = []
 
@@ -58,15 +59,15 @@ const generateMockPayments = (): PaymentRecord[] => {
     const room = rooms[Math.floor(Math.random() * rooms.length)]
 
     // Determine school level based on grade
-    let schoolLevel: "nk" | "primary" | "secondary"
+    let schoolLevel: "nk" | "pri" | "sf"
     if (grade === "Reception") {
       schoolLevel = "nk"
     } else {
       const yearNumber = parseInt(grade.replace("Year ", ""))
       if (yearNumber <= 6) {
-        schoolLevel = "primary"
+        schoolLevel = "pri"
       } else {
-        schoolLevel = "secondary"
+        schoolLevel = "sf"
       }
     }
 
@@ -79,6 +80,7 @@ const generateMockPayments = (): PaymentRecord[] => {
 
     const date = new Date()
     date.setDate(date.getDate() - Math.floor(Math.random() * 90))
+    const activityType: "ECA" | "EAS" = Math.random() > 0.5 ? "ECA" : "EAS"
 
     payments.push({
       id: i.toString(),
@@ -96,13 +98,13 @@ const generateMockPayments = (): PaymentRecord[] => {
       status,
       transactionDate: date,
       parentType: Math.random() > 0.7 ? "external" : "internal", // 30% external, 70% internal
+      activityType,
       referenceNumber: `REF-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
       paymentDescription: paymentType === "yearly" ? "Annual tuition fee payment for academic year 2025-2026" : "Term 1 tuition fee payment",
       dueDate: new Date(date.getTime() + 15 * 24 * 60 * 60 * 1000), // 15 days after transaction date
       notes: status === "cancelled" ? "Payment cancelled by parent request" :
              status === "overdue" ? "Payment overdue - reminder sent" :
              status === "unpaid" ? "Payment not yet received" :
-             status === "partial" ? "Partial payment received, balance pending" :
              "Payment completed successfully"
     })
   }
@@ -114,19 +116,21 @@ const mockPayments: PaymentRecord[] = generateMockPayments()
 
 interface PaymentHistoryProps {
   type?: "tuition" | "afterschool"
+  initialStatusFilter?: PaymentStatus
 }
 
-export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
+export function PaymentHistory({ type = "tuition", initialStatusFilter }: PaymentHistoryProps) {
   const { t } = useTranslation()
   const [payments] = useState<PaymentRecord[]>(mockPayments)
   const [filteredPayments, setFilteredPayments] = useState<PaymentRecord[]>(mockPayments)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<PaymentStatus>("all")
+  const [statusFilter, setStatusFilter] = useState<PaymentStatus>(initialStatusFilter || "all")
   const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
   const [gradeFilter, setGradeFilter] = useState("all")
   const [roomFilter, setRoomFilter] = useState("all")
   const [schoolLevelFilter, setSchoolLevelFilter] = useState("all")
   const [paymentChannelFilter, setPaymentChannelFilter] = useState<PaymentChannel>("all")
+  const [activityTypeFilter, setActivityTypeFilter] = useState<"all" | "ECA" | "EAS">("all")
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
   const [dateTo, setDateTo] = useState<Date | null>(null)
   const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null)
@@ -134,6 +138,13 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  // Apply filters when initialStatusFilter changes
+  useEffect(() => {
+    if (initialStatusFilter) {
+      applyFilters()
+    }
+  }, [initialStatusFilter])
 
   const applyFilters = () => {
     let filtered = payments
@@ -170,6 +181,10 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
       filtered = filtered.filter(payment => payment.paymentChannel === paymentChannelFilter)
     }
 
+    if (activityTypeFilter !== "all") {
+      filtered = filtered.filter(payment => payment.activityType === activityTypeFilter)
+    }
+
     if (dateFrom) {
       filtered = filtered.filter(payment => payment.transactionDate >= dateFrom)
     }
@@ -190,6 +205,7 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
     setRoomFilter("all")
     setSchoolLevelFilter("all")
     setPaymentChannelFilter("all")
+    setActivityTypeFilter("all")
     setDateFrom(null)
     setDateTo(null)
     setFilteredPayments(payments)
@@ -393,19 +409,37 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
                 onStatusChange={setStatusFilter}
               />
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('paymentHistory.paymentType')}</label>
-                <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('paymentHistory.allTypes')}</SelectItem>
-                    <SelectItem value="yearly">{t('paymentHistory.yearly')}</SelectItem>
-                    <SelectItem value="termly">{t('paymentHistory.termly')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {type === "tuition" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('paymentHistory.paymentType')}</label>
+                  <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('paymentHistory.allTypes')}</SelectItem>
+                      <SelectItem value="yearly">{t('paymentHistory.yearly')}</SelectItem>
+                      <SelectItem value="termly">{t('paymentHistory.termly')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {type === "afterschool" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('paymentHistory.activityType')}</label>
+                  <Select value={activityTypeFilter} onValueChange={setActivityTypeFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('paymentHistory.allActivityTypes')}</SelectItem>
+                      <SelectItem value="ECA">ECA</SelectItem>
+                      <SelectItem value="EAS">EAS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('paymentHistory.schoolLevel')}</label>
@@ -416,8 +450,8 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
                   <SelectContent>
                     <SelectItem value="all">{t('paymentHistory.allSchoolLevels')}</SelectItem>
                     <SelectItem value="nk">{t('paymentHistory.schoolLevels.nk')}</SelectItem>
-                    <SelectItem value="primary">{t('paymentHistory.schoolLevels.primary')}</SelectItem>
-                    <SelectItem value="secondary">{t('paymentHistory.schoolLevels.secondary')}</SelectItem>
+                    <SelectItem value="pri">{t('paymentHistory.schoolLevels.pri')}</SelectItem>
+                    <SelectItem value="sf">{t('paymentHistory.schoolLevels.sf')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -546,8 +580,9 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
                 <TableHead>{t('paymentHistory.student')}</TableHead>
                 <TableHead>{t('paymentHistory.grade')}</TableHead>
                 <TableHead>{t('paymentHistory.room')}</TableHead>
+                {type === "afterschool" && <TableHead>{t('paymentHistory.activityType')}</TableHead>}
                 <TableHead>{t('paymentHistory.amount')}</TableHead>
-                <TableHead>{t('paymentHistory.type')}</TableHead>
+                {type === "tuition" && <TableHead>{t('paymentHistory.type')}</TableHead>}
                 <TableHead>{t('paymentHistory.channel')}</TableHead>
                 <TableHead>{t('paymentHistory.status')}</TableHead>
                 <TableHead>{t('paymentHistory.date')}</TableHead>
@@ -572,8 +607,15 @@ export function PaymentHistory({ type = "tuition" }: PaymentHistoryProps) {
                   <TableCell>
                     <Badge variant="outline">{payment.studentRoom}</Badge>
                   </TableCell>
+                  {type === "afterschool" && (
+                    <TableCell>
+                      <Badge variant={payment.activityType === "ECA" ? "default" : "secondary"}>
+                        {payment.activityType}
+                      </Badge>
+                    </TableCell>
+                  )}
                   <TableCell>฿{payment.amount.toLocaleString()}</TableCell>
-                  <TableCell>{getPaymentTypeBadge(payment.paymentType)}</TableCell>
+                  {type === "tuition" && <TableCell>{getPaymentTypeBadge(payment.paymentType)}</TableCell>}
                   <TableCell>{getPaymentChannelLabel(payment.paymentChannel, t)}</TableCell>
                   <TableCell>{getStatusBadge(payment.status, t)}</TableCell>
                   <TableCell>{format(payment.transactionDate, "MMM dd, yyyy")}</TableCell>

@@ -22,11 +22,11 @@ interface Invoice {
   studentId: string
   studentGrade: string
   studentRoom: string
-  schoolLevel: "nk" | "primary" | "secondary"
+  schoolLevel: "nk" | "pri" | "sf"
   amount: number
   dueDate: Date
   issueDate: Date
-  status: "paid" | "partial" | "unpaid" | "cancelled" | "overdue"
+  status: "paid" | "unpaid" | "cancelled" | "overdue"
   term: string
   paymentType: "yearly" | "termly"
   paymentChannel?: "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank"
@@ -41,7 +41,7 @@ const mockInvoices: Invoice[] = [
     studentId: "ST001234",
     studentGrade: "Year 10",
     studentRoom: "A",
-    schoolLevel: "secondary",
+    schoolLevel: "sf",
     amount: 125000,
     dueDate: new Date("2025-08-01"),
     issueDate: new Date("2025-07-01"),
@@ -57,7 +57,7 @@ const mockInvoices: Invoice[] = [
     studentId: "ST001235",
     studentGrade: "Year 7",
     studentRoom: "B",
-    schoolLevel: "secondary",
+    schoolLevel: "sf",
     amount: 42000,
     dueDate: new Date("2025-08-01"),
     issueDate: new Date("2025-07-01"),
@@ -73,7 +73,7 @@ const mockInvoices: Invoice[] = [
     studentId: "ST001236",
     studentGrade: "Year 12",
     studentRoom: "C",
-    schoolLevel: "secondary",
+    schoolLevel: "sf",
     amount: 125000,
     dueDate: new Date("2025-07-15"),
     issueDate: new Date("2025-06-15"),
@@ -89,7 +89,7 @@ const mockInvoices: Invoice[] = [
     studentId: "ST001237",
     studentGrade: "Year 3",
     studentRoom: "D",
-    schoolLevel: "primary",
+    schoolLevel: "pri",
     amount: 42000,
     dueDate: new Date("2025-08-15"),
     issueDate: new Date("2025-07-15"),
@@ -120,7 +120,7 @@ const mockInvoices: Invoice[] = [
 for (let i = 6; i <= 120; i++) {
   const grades = ["Reception", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12"]
   const rooms = ["A", "B", "C", "D", "E", "F", "G", "H"]
-  const statuses: ("paid" | "partial" | "unpaid" | "cancelled" | "overdue")[] = ["paid", "partial", "unpaid", "cancelled", "overdue"]
+  const statuses: ("paid" | "unpaid" | "cancelled" | "overdue")[] = ["paid", "unpaid", "cancelled", "overdue"]
   const paymentTypes: ("yearly" | "termly")[] = ["yearly", "termly"]
   const paymentChannels: ("credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank")[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
 
@@ -128,15 +128,15 @@ for (let i = 6; i <= 120; i++) {
   const room = rooms[i % rooms.length]
 
   // Determine school level based on grade
-  let schoolLevel: "nk" | "primary" | "secondary"
+  let schoolLevel: "nk" | "pri" | "sf"
   if (grade === "Reception") {
     schoolLevel = "nk"
   } else {
     const yearNumber = parseInt(grade.replace("Year ", ""))
     if (yearNumber <= 6) {
-      schoolLevel = "primary"
+      schoolLevel = "pri"
     } else {
-      schoolLevel = "secondary"
+      schoolLevel = "sf"
     }
   }
 
@@ -457,8 +457,8 @@ export function InvoiceOverview() {
                   <SelectContent>
                     <SelectItem value="all">All Levels</SelectItem>
                     <SelectItem value="nk">NK</SelectItem>
-                    <SelectItem value="primary">Primary</SelectItem>
-                    <SelectItem value="secondary">Secondary</SelectItem>
+                    <SelectItem value="pri">Pri</SelectItem>
+                    <SelectItem value="sf">SF</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

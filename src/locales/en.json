@@ -54,6 +54,7 @@
     "waiveFee": "Waive Fee",
     "discountReports": "Discount Reports",
     "invoices": "Invoices",
+    "creditNotes": "Credit Notes",
     "itemsTemplates": "Items & Templates",
     "emailJobs": "Email Jobs",
     "userManagement": "User Management"
@@ -137,6 +138,8 @@
     "term3": "Term 3 (April - July)"
   },
   "paymentHistory": {
+    "activityType": "ECA / EAS",
+    "allActivityTypes": "All Activity Types",
     "title": {
       "tuition": "Tuition Payment History",
       "afterschool": "ECA & EAS Payment History"
@@ -220,8 +223,8 @@
     },
     "schoolLevels": {
       "nk": "NK",
-      "primary": "Primary",
-      "secondary": "Secondary"
+      "pri": "Pri",
+      "sf": "SF"
     }
   }
 }

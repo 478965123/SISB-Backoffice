@@ -46,7 +46,7 @@ interface EventRegistration {
   studentId: string
   yearGroup: string
   registrationDate: string
-  paymentStatus: 'paid' | 'partial' | 'unpaid' | 'cancelled' | 'overdue'
+  paymentStatus: 'paid' | 'unpaid' | 'cancelled' | 'overdue'
   amount: number
   paymentChannel: "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank"
   parentEmail: string
@@ -67,7 +67,7 @@ const generateMockRegistrations = (): EventRegistration[] => {
   const yearGroups = ["Reception", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12"]
   const firstNames = ["John", "Emma", "Michael", "Sarah", "David", "Lisa", "James", "Sophia", "William", "Olivia", "Benjamin", "Ava", "Lucas", "Isabella", "Henry", "Mia"]
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"]
-  const statuses: ('paid' | 'partial' | 'unpaid' | 'cancelled' | 'overdue')[] = ["paid", "paid", "partial", "unpaid", "cancelled", "overdue"]
+  const statuses: ('paid' | 'unpaid' | 'cancelled' | 'overdue')[] = ["paid", "paid", "unpaid", "cancelled", "overdue"]
   const paymentChannels: ('credit_card' | 'wechat_pay' | 'alipay' | 'qr_payment' | 'counter_bank')[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
 
   const registrations: EventRegistration[] = []

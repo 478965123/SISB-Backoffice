@@ -6,16 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Calendar } from "./ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts"
-import { Users, Coins, Calendar as CalendarIcon, CreditCard, Filter, RotateCcw, GraduationCap, UserX } from "lucide-react"
+import { Users, Coins, Calendar as CalendarIcon, CreditCard, Filter, RotateCcw, GraduationCap, UserX, ChevronRight } from "lucide-react"
 import { format, subDays, startOfYear, endOfYear } from "date-fns"
 
 const paymentData = [
-  { month: "Aug", yearly: 45, termly: 30 },
-  { month: "Sep", yearly: 52, termly: 28 },
-  { month: "Oct", yearly: 38, termly: 35 },
-  { month: "Nov", yearly: 41, termly: 42 },
-  { month: "Dec", yearly: 35, termly: 38 },
-  { month: "Jan", yearly: 48, termly: 45 }
+  { term: "Term 1", yearly: 280, termly: 170 },
+  { term: "Term 2", yearly: 250, termly: 170 },
+  { term: "Term 3", yearly: 300, termly: 180 }
 ]
 
 const getPaymentChannelData = (t: (key: string) => string) => [
@@ -50,7 +47,11 @@ interface DateRange {
   to?: Date
 }
 
-export function TuitionDashboard() {
+interface TuitionDashboardProps {
+  onNavigateToPaymentHistory?: (status?: "paid" | "unpaid") => void
+}
+
+export function TuitionDashboard({ onNavigateToPaymentHistory }: TuitionDashboardProps) {
   const { t } = useTranslation()
   // Filter states
   const [selectedYear, setSelectedYear] = useState<string>("")
@@ -368,10 +369,16 @@ export function TuitionDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => onNavigateToPaymentHistory?.("paid")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.studentsPaid')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2,847</div>
@@ -381,10 +388,16 @@ export function TuitionDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => onNavigateToPaymentHistory?.("unpaid")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.studentsUnpaid')}</CardTitle>
-            <UserX className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <UserX className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">438</div>
@@ -440,6 +453,28 @@ export function TuitionDashboard() {
         </Card>
       </div>
 
+      {/* Revenue by Term */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('dashboard.revenueByTerm')}</CardTitle>
+          <p className="text-sm text-muted-foreground">{getFilteredDisplay()}</p>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={termRevenueData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="term" />
+              <YAxis
+                tickFormatter={(value) => value.toLocaleString()}
+                width={80}
+              />
+              <Tooltip formatter={(value) => [`฿${value.toLocaleString()}`, "Revenue"]} />
+              <Bar dataKey="amount" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Payment Type Distribution */}
@@ -452,7 +487,7 @@ export function TuitionDashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={paymentData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="term" />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="yearly" fill="#8884d8" name="Yearly" />
@@ -491,25 +526,6 @@ export function TuitionDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Term Revenue */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('dashboard.revenueByTerm')}</CardTitle>
-          <p className="text-sm text-muted-foreground">{getFilteredDisplay()}</p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={termRevenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="term" />
-              <YAxis />
-              <Tooltip formatter={(value) => [`฿${value.toLocaleString()}`, "Revenue"]} />
-              <Bar dataKey="amount" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
 
       {/* Recent Activity */}
       <Card>

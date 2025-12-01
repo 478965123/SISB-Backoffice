@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Badge } from "./ui/badge"
 
-export type PaymentStatus = "paid" | "partial" | "unpaid" | "cancelled" | "overdue" | "all"
+export type PaymentStatus = "paid" | "unpaid" | "cancelled" | "overdue" | "all"
 
 export type PaymentChannel = "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank" | "all"
 
@@ -17,7 +17,6 @@ export function StatusFilter({ selectedStatus, onStatusChange }: StatusFilterPro
   const statusOptions = [
     { value: "all" as PaymentStatus, label: t('paymentHistory.allStatus'), color: undefined },
     { value: "paid" as PaymentStatus, label: t('paymentHistory.paymentStatus.paid'), color: "bg-green-100 text-green-800 hover:bg-green-100" },
-    { value: "partial" as PaymentStatus, label: t('paymentHistory.paymentStatus.partial'), color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" },
     { value: "unpaid" as PaymentStatus, label: t('paymentHistory.paymentStatus.unpaid'), color: "bg-gray-100 text-gray-800 hover:bg-gray-100" },
     { value: "cancelled" as PaymentStatus, label: t('paymentHistory.paymentStatus.cancelled'), color: "bg-red-100 text-red-800 hover:bg-red-100" },
     { value: "overdue" as PaymentStatus, label: t('paymentHistory.paymentStatus.overdue'), color: "bg-orange-100 text-orange-800 hover:bg-orange-100" }
@@ -96,12 +95,6 @@ export function getStatusBadge(status: string, t?: any) {
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
           {getLabel('paid')}
-        </Badge>
-      )
-    case "partial":
-      return (
-        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-          {getLabel('partial')}
         </Badge>
       )
     case "unpaid":

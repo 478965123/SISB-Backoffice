@@ -19,7 +19,7 @@ interface RegistrationPeriod {
   closeDate: Date | null
   isActive: boolean
   maxRegistrationsPerStudent: number
-  schoolLevels: string[] // ["NK", "Primary", "Secondary"]
+  schoolLevels: string[] // ["NK", "Pri", "SF"]
 }
 
 const initialPeriods: RegistrationPeriod[] = [
@@ -31,7 +31,7 @@ const initialPeriods: RegistrationPeriod[] = [
     closeDate: new Date("2025-07-31"),
     isActive: true,
     maxRegistrationsPerStudent: 3,
-    schoolLevels: ["NK", "Primary", "Secondary"]
+    schoolLevels: ["NK", "Pri", "SF"]
   },
   {
     id: "2",
@@ -41,7 +41,7 @@ const initialPeriods: RegistrationPeriod[] = [
     closeDate: new Date("2025-12-31"),
     isActive: false,
     maxRegistrationsPerStudent: 3,
-    schoolLevels: ["Primary", "Secondary"]
+    schoolLevels: ["Pri", "SF"]
   }
 ]
 
@@ -309,7 +309,7 @@ export function AfterSchoolSettings({ onSaveComplete }: AfterSchoolSettingsProps
                   <Label>School Levels</Label>
                   <p className="text-sm text-muted-foreground mb-2">Select which school levels can register for this period</p>
                   <div className="grid grid-cols-3 gap-4">
-                    {["NK", "Primary", "Secondary"].map((level) => (
+                    {["NK", "Pri", "SF"].map((level) => (
                       <div key={level} className="flex items-center justify-between p-3 border rounded-lg">
                         <Label htmlFor={`${period.id}-${level}`} className="cursor-pointer">
                           {level}

@@ -54,6 +54,7 @@
     "waiveFee": "ยกเว้นค่าธรรมเนียม",
     "discountReports": "รายงานส่วนลด",
     "invoices": "ใบแจ้งหนี้",
+    "creditNotes": "ใบลดหนี้",
     "itemsTemplates": "รายการและเทมเพลต",
     "emailJobs": "งานอีเมล",
     "userManagement": "จัดการผู้ใช้งาน"
@@ -137,6 +138,8 @@
     "term3": "เทอม 3 (เมษายน - กรกฎาคม)"
   },
   "paymentHistory": {
+    "activityType": "ECA / EAS",
+    "allActivityTypes": "กิจกรรมทั้งหมด",
     "title": {
       "tuition": "ประวัติการชำระค่าเทอม",
       "afterschool": "ประวัติการชำระ ECA & EAS"
@@ -220,8 +223,8 @@
     },
     "schoolLevels": {
       "nk": "NK",
-      "primary": "ประถม",
-      "secondary": "มัธยม"
+      "pri": "Pri",
+      "sf": "SF"
     }
   }
 }

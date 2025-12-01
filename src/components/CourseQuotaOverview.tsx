@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Separator } from "./ui/separator"
 import { Textarea } from "./ui/textarea"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination"
-import { Search, Filter, Users, Coins, AlertTriangle, CheckCircle, Clock, Edit, Eye, Upload, Plus, Minus, Save, X, FileText, ChevronLeft, ChevronRight, Download, UserCheck, Calendar, CreditCard } from "lucide-react"
+import { Search, Filter, Users, Coins, AlertTriangle, CheckCircle, Clock, Edit, Eye, Upload, Plus, Minus, Save, X, FileText, ChevronLeft, ChevronRight, Download, UserCheck, Calendar, CreditCard, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner@2.0.3"
 
@@ -30,6 +30,7 @@ interface Course {
   ageGroup: string
   startDate: Date
   endDate: Date
+  activityType: "ECA" | "EAS"
 }
 
 interface StudentRegistration {
@@ -64,7 +65,8 @@ const mockCourses: Course[] = [
     location: "Swimming Pool",
     ageGroup: "6-8 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "ECA"
   },
   {
     id: "2",
@@ -81,7 +83,8 @@ const mockCourses: Course[] = [
     location: "Football Field",
     ageGroup: "9-12 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "ECA"
   },
   {
     id: "3",
@@ -98,7 +101,8 @@ const mockCourses: Course[] = [
     location: "Art Studio",
     ageGroup: "5-10 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "EAS"
   },
   {
     id: "4",
@@ -115,7 +119,8 @@ const mockCourses: Course[] = [
     location: "Music Room 1",
     ageGroup: "7-15 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "ECA"
   },
   {
     id: "5",
@@ -132,7 +137,8 @@ const mockCourses: Course[] = [
     location: "Basketball Court",
     ageGroup: "8-12 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "ECA"
   },
   {
     id: "6",
@@ -149,7 +155,8 @@ const mockCourses: Course[] = [
     location: "Drama Studio",
     ageGroup: "6-14 years",
     startDate: new Date("2025-08-15"),
-    endDate: new Date("2025-12-20")
+    endDate: new Date("2025-12-20"),
+    activityType: "EAS"
   }
 ]
 
@@ -199,7 +206,9 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [vendorFilter, setVendorFilter] = useState("all")
-  const [sortBy, setSortBy] = useState("name")
+  const [activityTypeFilter, setActivityTypeFilter] = useState<"all" | "ECA" | "EAS">("all")
+  const [sortField, setSortField] = useState<keyof Course | null>(null)
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
@@ -244,29 +253,56 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
       filtered = filtered.filter(course => course.vendor.toLowerCase() === vendorFilter)
     }
 
-    // Sort
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "enrollment":
-          return b.enrolled - a.enrolled
-        case "revenue":
-          return b.totalRevenue - a.totalRevenue
-        case "capacity":
-          return (b.enrolled / b.capacity) - (a.enrolled / a.capacity)
-        default:
-          return a.name.localeCompare(b.name)
-      }
-    })
+    if (activityTypeFilter !== "all") {
+      filtered = filtered.filter(course => course.activityType === activityTypeFilter)
+    }
+
+    // Apply sorting
+    if (sortField) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortField]
+        const bValue = b[sortField]
+
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortDirection === "asc"
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue)
+        }
+
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return sortDirection === "asc" ? aValue - bValue : bValue - aValue
+        }
+
+        return 0
+      })
+    } else {
+      // Default sort by name
+      filtered.sort((a, b) => a.name.localeCompare(b.name))
+    }
 
     setFilteredCourses(filtered)
     setCurrentPage(1) // Reset to first page when filters are applied
+  }
+
+  // Apply filters when any filter or sort changes
+  useEffect(() => {
+    applyFilters()
+  }, [searchTerm, statusFilter, vendorFilter, activityTypeFilter, sortField, sortDirection])
+
+  const handleSort = (field: keyof Course) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
   }
 
   const clearFilters = () => {
     setSearchTerm("")
     setStatusFilter("all")
     setVendorFilter("all")
-    setSortBy("name")
+    setActivityTypeFilter("all")
     setFilteredCourses(courses)
     setCurrentPage(1)
   }
@@ -596,6 +632,20 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
             </div>
 
             <div className="space-y-2">
+              <label className="text-sm font-medium">ECA / EAS</label>
+              <Select value={activityTypeFilter} onValueChange={setActivityTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Activity Types</SelectItem>
+                  <SelectItem value="ECA">ECA</SelectItem>
+                  <SelectItem value="EAS">EAS</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-sm font-medium">Vendor</label>
               <Select value={vendorFilter} onValueChange={setVendorFilter}>
                 <SelectTrigger>
@@ -612,20 +662,6 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Sort By</label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Course Name</SelectItem>
-                  <SelectItem value="enrollment">Enrollment</SelectItem>
-                  <SelectItem value="revenue">Revenue</SelectItem>
-                  <SelectItem value="capacity">Capacity Utilization</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="flex gap-2">
@@ -656,12 +692,85 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Course Details</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead>Enrollment</TableHead>
-                <TableHead>Revenue</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("name")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Course Details
+                    {sortField === "name" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("vendor")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Vendor
+                    {sortField === "vendor" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("capacity")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Capacity
+                    {sortField === "capacity" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("enrolled")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Enrollment
+                    {sortField === "enrolled" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("totalRevenue")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Revenue
+                    {sortField === "totalRevenue" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("status")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Status
+                    {sortField === "status" ? (
+                      sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 opacity-50" />
+                    )}
+                  </button>
+                </TableHead>
                 <TableHead>Schedule</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -685,6 +794,11 @@ export function CourseQuotaOverview({ onNavigateToSubPage }: CourseQuotaOverview
                       </div>
                     </TableCell>
                     <TableCell>{course.vendor}</TableCell>
+                    <TableCell>
+                      <Badge variant={course.activityType === "ECA" ? "default" : "secondary"}>
+                        {course.activityType}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span>{course.capacity}</span>

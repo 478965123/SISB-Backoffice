@@ -86,6 +86,7 @@ import { FieldTripDashboard } from "./components/FieldTripDashboard"
 import { TripManagement } from "./components/TripManagement"
 import { FieldTripPaymentReports } from "./components/FieldTripPaymentReports"
 import { FieldTripReceipts } from "./components/FieldTripReceipts"
+import { CreditNoteManagement } from "./components/CreditNoteManagement"
 
 const menuItems = {
   tuition: [
@@ -123,6 +124,7 @@ const menuItems = {
   ],
   invoiceManagement: [
     { id: "invoice-management", labelKey: "menu.invoices", icon: FileInvoice },
+    { id: "credit-note-management", labelKey: "menu.creditNotes", icon: FileCheck },
   ],
   emailNotifications: [
     { id: "email-jobs", labelKey: "menu.emailJobs", icon: Mail },
@@ -138,6 +140,7 @@ export default function App() {
   const [subPageHistory, setSubPageHistory] = useState<string[]>([])
 
   const [subPageParams, setSubPageParams] = useState<any>(null)
+  const [paymentHistoryStatusFilter, setPaymentHistoryStatusFilter] = useState<"paid" | "unpaid" | undefined>(undefined)
   
   // Global View Modal state (keeping for backward compatibility)
   const [isGlobalViewModalOpen, setIsGlobalViewModalOpen] = useState(false)
@@ -205,7 +208,14 @@ export default function App() {
       setSubPageHistory(subPageHistory.slice(0, -1))
       setActiveSection(previousPage)
       setSubPageParams(null)
+      setPaymentHistoryStatusFilter(undefined)
     }
+  }
+
+  // Navigate to payment history with status filter
+  const navigateToPaymentHistory = (status?: "paid" | "unpaid") => {
+    setPaymentHistoryStatusFilter(status)
+    setActiveSection("payment-history")
   }
 
   const isSubPage = subPageHistory.length > 0
@@ -213,13 +223,13 @@ export default function App() {
   const renderContent = () => {
     switch (activeSection) {
       case "tuition-dashboard":
-        return <TuitionDashboard />
+        return <TuitionDashboard onNavigateToPaymentHistory={navigateToPaymentHistory} />
       case "tuition-term-settings":
         return <TuitionTermSettings />
       case "debt-reminder-settings":
         return <DebtReminderSettings />
       case "payment-history":
-        return <PaymentHistory />
+        return <PaymentHistory initialStatusFilter={paymentHistoryStatusFilter} />
       case "tuition-invoice-management":
         return <TuitionInvoiceManagement />
       case "afterschool-dashboard":
@@ -262,8 +272,10 @@ export default function App() {
         return <FieldTripReceipts />
       case "invoice-management":
         return <InvoiceManagement onNavigateToSubPage={navigateToSubPage} onNavigateToView={navigateToViewDetails} />
+      case "credit-note-management":
+        return <CreditNoteManagement />
       case "invoice-creation":
-        return <InvoiceCreation 
+        return <InvoiceCreation
           defaultCategory={subPageParams?.defaultCategory}
           invoiceType={subPageParams?.invoiceType}
         />

@@ -56,7 +56,7 @@ interface PaymentRecord {
   paymentDate: string
   paymentMethod: 'credit_card' | 'bank_transfer' | 'cash' | 'cheque'
   paymentChannel: 'credit_card' | 'wechat_pay' | 'alipay' | 'qr_payment' | 'counter_bank'
-  status: 'paid' | 'partial' | 'unpaid' | 'cancelled' | 'overdue'
+  status: 'paid' | 'unpaid' | 'cancelled' | 'overdue'
   transactionId: string
   parentEmail: string
 }
@@ -77,7 +77,7 @@ const generateMockPaymentRecords = (): PaymentRecord[] => {
   const categories = ["Sports", "Creative", "Technology", "Performance", "Academic"]
   const paymentMethods: ('credit_card' | 'bank_transfer' | 'cash' | 'cheque')[] = ["credit_card", "bank_transfer", "cash", "cheque"]
   const paymentChannels: ('credit_card' | 'wechat_pay' | 'alipay' | 'qr_payment' | 'counter_bank')[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
-  const statuses: ('paid' | 'partial' | 'unpaid' | 'cancelled' | 'overdue')[] = ["paid", "paid", "partial", "unpaid", "cancelled", "overdue"]
+  const statuses: ('paid' | 'unpaid' | 'cancelled' | 'overdue')[] = ["paid", "paid", "unpaid", "cancelled", "overdue"]
   const firstNames = ["John", "Emma", "Michael", "Sarah", "David", "Lisa", "James", "Sophia", "William", "Olivia", "Benjamin", "Ava", "Lucas", "Isabella", "Henry", "Mia"]
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"]
 
@@ -231,7 +231,7 @@ export function SummerPaymentReports() {
 
   const calculatePendingAmount = () => {
     return filteredPayments
-      .filter(p => p.status === 'unpaid' || p.status === 'partial')
+      .filter(p => p.status === 'unpaid')
       .reduce((sum, p) => sum + p.amount, 0)
   }
 
@@ -293,7 +293,7 @@ export function SummerPaymentReports() {
               <CardContent>
                 <div className="text-2xl font-bold">฿{calculatePendingAmount().toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  {filteredPayments.filter(p => p.status === 'unpaid' || p.status === 'partial').length} transactions
+                  {filteredPayments.filter(p => p.status === 'unpaid').length} transactions
                 </p>
               </CardContent>
             </Card>
