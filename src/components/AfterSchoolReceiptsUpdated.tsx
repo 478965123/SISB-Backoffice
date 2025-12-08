@@ -27,6 +27,7 @@ interface AfterSchoolReceipt {
   paymentType: "single" | "complete"
   downloadCount: number
   isExternal: boolean
+  activityType: "ECA" | "EAS"
 }
 
 const mockReceipts: AfterSchoolReceipt[] = [
@@ -42,7 +43,8 @@ const mockReceipts: AfterSchoolReceipt[] = [
     transactionDate: new Date("2025-08-15"),
     paymentType: "complete",
     downloadCount: 2,
-    isExternal: true
+    isExternal: true,
+    activityType: "ECA"
   },
   {
     id: "2",
@@ -56,7 +58,8 @@ const mockReceipts: AfterSchoolReceipt[] = [
     transactionDate: new Date("2025-08-14"),
     paymentType: "single",
     downloadCount: 1,
-    isExternal: false
+    isExternal: false,
+    activityType: "EAS"
   },
   {
     id: "3",
@@ -70,7 +73,8 @@ const mockReceipts: AfterSchoolReceipt[] = [
     transactionDate: new Date("2025-08-13"),
     paymentType: "complete",
     downloadCount: 0,
-    isExternal: true
+    isExternal: true,
+    activityType: "ECA"
   },
   {
     id: "4",
@@ -84,7 +88,8 @@ const mockReceipts: AfterSchoolReceipt[] = [
     transactionDate: new Date("2025-08-12"),
     paymentType: "single",
     downloadCount: 3,
-    isExternal: false
+    isExternal: false,
+    activityType: "EAS"
   },
   {
     id: "5",
@@ -98,7 +103,8 @@ const mockReceipts: AfterSchoolReceipt[] = [
     transactionDate: new Date("2025-08-11"),
     paymentType: "complete",
     downloadCount: 0,
-    isExternal: true
+    isExternal: true,
+    activityType: "ECA"
   }
 ]
 
@@ -107,7 +113,8 @@ for (let i = 6; i <= 50; i++) {
   const isExternal = Math.random() > 0.5
   const activities = ["Swimming", "Football", "Art & Craft", "Piano", "Drama", "Chess", "Basketball", "Music Theory"]
   const selectedActivities = activities.slice(0, Math.floor(Math.random() * 3) + 1)
-  
+  const activityType: "ECA" | "EAS" = Math.random() > 0.5 ? "ECA" : "EAS"
+
   mockReceipts.push({
     id: i.toString(),
     receiptNumber: `AS-RCP-2025-${String(1234 + i).padStart(6, '0')}`,
@@ -120,7 +127,8 @@ for (let i = 6; i <= 50; i++) {
     transactionDate: new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
     paymentType: Math.random() > 0.5 ? "complete" : "single",
     downloadCount: Math.floor(Math.random() * 5),
-    isExternal
+    isExternal,
+    activityType
   })
 }
 
@@ -130,6 +138,7 @@ export function AfterSchoolReceipts() {
   const [searchTerm, setSearchTerm] = useState("")
   const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
   const [parentTypeFilter, setParentTypeFilter] = useState("all")
+  const [activityTypeFilter, setActivityTypeFilter] = useState<"all" | "ECA" | "EAS">("all")
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
   const [dateTo, setDateTo] = useState<Date | null>(null)
 
@@ -141,12 +150,12 @@ export function AfterSchoolReceipts() {
     let filtered = receipts
 
     if (searchTerm) {
-      filtered = filtered.filter(receipt => 
+      filtered = filtered.filter(receipt =>
         receipt.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         receipt.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         receipt.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         receipt.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        receipt.activities.some(activity => 
+        receipt.activities.some(activity =>
           activity.toLowerCase().includes(searchTerm.toLowerCase())
         )
       )
@@ -157,9 +166,13 @@ export function AfterSchoolReceipts() {
     }
 
     if (parentTypeFilter !== "all") {
-      filtered = filtered.filter(receipt => 
+      filtered = filtered.filter(receipt =>
         parentTypeFilter === "external" ? receipt.isExternal : !receipt.isExternal
       )
+    }
+
+    if (activityTypeFilter !== "all") {
+      filtered = filtered.filter(receipt => receipt.activityType === activityTypeFilter)
     }
 
     if (dateFrom) {
@@ -178,6 +191,7 @@ export function AfterSchoolReceipts() {
     setSearchTerm("")
     setPaymentTypeFilter("all")
     setParentTypeFilter("all")
+    setActivityTypeFilter("all")
     setDateFrom(null)
     setDateTo(null)
     setFilteredReceipts(receipts)
@@ -202,6 +216,126 @@ export function AfterSchoolReceipts() {
     const receipt = receipts.find(r => r.id === receiptId)
     if (receipt) {
       toast.info(`Viewing receipt ${receipt.receiptNumber}`)
+    }
+  }
+
+  const exportAll = () => {
+    // Helper function to escape CSV values
+    const escapeCsvValue = (value: any): string => {
+      if (value === null || value === undefined) return ''
+      const stringValue = String(value)
+      if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    // Create metadata section
+    const currentDateExport = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    const totalAmount = filteredReceipts.reduce((sum, receipt) => sum + receipt.totalAmount, 0)
+
+    // Create empty columns to position metadata at column N (14th column, index 13)
+    const emptyColumns = new Array(10).fill('')
+
+    // Create CSV headers
+    const headers = [
+      'Receipt Number',
+      'Parent Name',
+      'Student Name',
+      'Student ID',
+      'Activity Type',
+      'Activities',
+      'Total Amount (THB)',
+      'Payment Method',
+      'Payment Type',
+      'Transaction Date',
+      'Parent Type'
+    ]
+
+    // Metadata rows positioned at column L
+    const metadataRows = [
+      [...emptyColumns, escapeCsvValue('SISB After School Receipt Export')].join(','),
+      [...emptyColumns, escapeCsvValue(`Export Date: ${currentDateExport}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Records: ${filteredReceipts.length}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount}`)].join(','),
+      [...emptyColumns, ''].join(','),
+      [...emptyColumns, escapeCsvValue('Applied Filters:')].join(','),
+      [...emptyColumns, escapeCsvValue(`Activity Type: ${activityTypeFilter === 'all' ? 'All Types' : activityTypeFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Payment Type: ${paymentTypeFilter === 'all' ? 'All Types' : paymentTypeFilter.charAt(0).toUpperCase() + paymentTypeFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Parent Type: ${parentTypeFilter === 'all' ? 'All Types' : parentTypeFilter.charAt(0).toUpperCase() + parentTypeFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Search Term: ${searchTerm || 'No search applied'}`)].join(','),
+      [...emptyColumns, ''].join(','),
+    ]
+
+    // Create CSV rows
+    const csvRows = [
+      ...metadataRows,
+      headers.join(','), // Header row
+      ...filteredReceipts.map(receipt => [
+        escapeCsvValue(receipt.receiptNumber),
+        escapeCsvValue(receipt.parentName),
+        escapeCsvValue(receipt.studentName),
+        escapeCsvValue(receipt.studentId),
+        escapeCsvValue(receipt.activityType),
+        escapeCsvValue(receipt.activities.join('; ')),
+        escapeCsvValue(receipt.totalAmount),
+        escapeCsvValue(receipt.paymentMethod),
+        escapeCsvValue(receipt.paymentType === 'complete' ? 'Complete Payment' : 'Single Activity'),
+        escapeCsvValue(format(receipt.transactionDate, 'yyyy-MM-dd')),
+        escapeCsvValue(receipt.isExternal ? 'External' : 'Internal')
+      ].join(',')),
+      '', // Empty row before total
+      // Total row
+      [
+        '',
+        '',
+        '',
+        '',
+        '',
+        escapeCsvValue('TOTAL'),
+        escapeCsvValue(totalAmount),
+        '',
+        '',
+        '',
+        ''
+      ].join(',')
+    ]
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n')
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+
+      // Generate filename with current date and filter info
+      const currentDate = format(new Date(), 'yyyy-MM-dd')
+      const paymentTypeText = paymentTypeFilter === 'all' ? 'all' : paymentTypeFilter
+      const parentTypeText = parentTypeFilter === 'all' ? 'all' : parentTypeFilter
+
+      const filename = `afterschool-receipts-${paymentTypeText}-${parentTypeText}-${currentDate}.csv`
+      link.setAttribute('download', filename)
+
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Show success toast
+      toast.success(`Successfully exported ${filteredReceipts.length} receipt records`, {
+        description: `File: ${filename}`,
+        duration: 4000,
+      })
+    } else {
+      toast.error("Export failed", {
+        description: "Your browser does not support file downloads",
+        duration: 4000,
+      })
     }
   }
 
@@ -264,7 +398,7 @@ export function AfterSchoolReceipts() {
                 <Mail className="w-4 h-4" />
                 Bulk Resend
               </Button>
-              <Button className="flex items-center gap-2">
+              <Button onClick={exportAll} className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Export All
               </Button>
@@ -319,7 +453,7 @@ export function AfterSchoolReceipts() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Search</label>
                   <div className="relative">
@@ -331,6 +465,20 @@ export function AfterSchoolReceipts() {
                       className="pl-10"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Activity Type</label>
+                  <Select value={activityTypeFilter} onValueChange={setActivityTypeFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="ECA">ECA</SelectItem>
+                      <SelectItem value="EAS">EAS</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -380,7 +528,7 @@ export function AfterSchoolReceipts() {
                         />
                       </PopoverContent>
                     </Popover>
-                    
+
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button variant="outline" size="sm" className="flex-1">
@@ -431,6 +579,7 @@ export function AfterSchoolReceipts() {
                   <TableRow>
                     <TableHead>Receipt Number</TableHead>
                     <TableHead>Parent & Student</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Activities</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Payment Method</TableHead>
@@ -454,6 +603,11 @@ export function AfterSchoolReceipts() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <Badge variant={receipt.activityType === "ECA" ? "default" : "secondary"}>
+                          {receipt.activityType}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div className="space-y-1">
                           {receipt.activities.slice(0, 2).map((activity, index) => (
                             <Badge key={index} variant="outline" className="block w-fit text-xs">
@@ -472,22 +626,22 @@ export function AfterSchoolReceipts() {
                       <TableCell>{format(receipt.transactionDate, "MMM dd, yyyy")}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => viewReceipt(receipt.id)}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => downloadReceipt(receipt.id)}
                           >
                             <Download className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => resendReceipt(receipt.id)}
                           >

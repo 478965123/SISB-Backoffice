@@ -226,6 +226,134 @@ export function EventReceipts() {
     }
   }
 
+  const exportAll = () => {
+    // Helper function to escape CSV values
+    const escapeCsvValue = (value: any): string => {
+      if (value === null || value === undefined) return ''
+      const stringValue = String(value)
+      if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    // Create metadata section
+    const currentDateExport = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    const totalAmount = filteredReceipts.reduce((sum, receipt) => sum + receipt.amount, 0)
+
+    // Create empty columns to position metadata at column N (14th column, index 13)
+    const emptyColumns = new Array(12).fill('')
+
+    // Create CSV headers
+    const headers = [
+      'Receipt Number',
+      'Event Name',
+      'Event Type',
+      'Event Date',
+      'Location',
+      'Participant Name',
+      'Participant ID',
+      'Grade',
+      'Parent Name',
+      'Amount (THB)',
+      'Payment Method',
+      'Transaction Date',
+      'Downloads',
+      'Participant Type'
+    ]
+
+    // Metadata rows positioned at column N
+    const metadataRows = [
+      [...emptyColumns, escapeCsvValue('SISB Event Receipt Export')].join(','),
+      [...emptyColumns, escapeCsvValue(`Export Date: ${currentDateExport}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Records: ${filteredReceipts.length}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount}`)].join(','),
+      [...emptyColumns, ''].join(','),
+      [...emptyColumns, escapeCsvValue('Applied Filters:')].join(','),
+      [...emptyColumns, escapeCsvValue(`Event Type: ${eventTypeFilter === 'all' ? 'All Types' : eventTypeFilter.charAt(0).toUpperCase() + eventTypeFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Participant Type: ${participantTypeFilter === 'all' ? 'All Types' : participantTypeFilter.charAt(0).toUpperCase() + participantTypeFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Search Term: ${searchTerm || 'No search applied'}`)].join(','),
+      [...emptyColumns, ''].join(','),
+    ]
+
+    // Create CSV rows
+    const csvRows = [
+      ...metadataRows,
+      headers.join(','), // Header row
+      ...filteredReceipts.map(receipt => [
+        escapeCsvValue(receipt.receiptNumber),
+        escapeCsvValue(receipt.eventName),
+        escapeCsvValue(receipt.eventType.charAt(0).toUpperCase() + receipt.eventType.slice(1)),
+        escapeCsvValue(format(receipt.eventDate, 'yyyy-MM-dd')),
+        escapeCsvValue(receipt.location),
+        escapeCsvValue(receipt.participantName),
+        escapeCsvValue(receipt.participantId),
+        escapeCsvValue(receipt.participantGrade),
+        escapeCsvValue(receipt.parentName),
+        escapeCsvValue(receipt.amount),
+        escapeCsvValue(receipt.paymentMethod),
+        escapeCsvValue(format(receipt.transactionDate, 'yyyy-MM-dd')),
+        escapeCsvValue(receipt.downloadCount),
+        escapeCsvValue(receipt.isExternal ? 'External' : 'Internal')
+      ].join(',')),
+      '', // Empty row before total
+      // Total row
+      [
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        escapeCsvValue('TOTAL'),
+        escapeCsvValue(totalAmount),
+        '',
+        '',
+        '',
+        ''
+      ].join(',')
+    ]
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n')
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+
+      // Generate filename with current date and filter info
+      const currentDate = format(new Date(), 'yyyy-MM-dd')
+      const eventTypeText = eventTypeFilter === 'all' ? 'all' : eventTypeFilter
+      const participantTypeText = participantTypeFilter === 'all' ? 'all' : participantTypeFilter
+
+      const filename = `event-receipts-${eventTypeText}-${participantTypeText}-${currentDate}.csv`
+      link.setAttribute('download', filename)
+
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Show success toast
+      toast.success(`Successfully exported ${filteredReceipts.length} receipt records`, {
+        description: `File: ${filename}`,
+        duration: 4000,
+      })
+    } else {
+      toast.error("Export failed", {
+        description: "Your browser does not support file downloads",
+        duration: 4000,
+      })
+    }
+  }
+
   const getEventTypeBadge = (eventType: string) => {
     switch (eventType) {
       case "educational":
@@ -295,7 +423,7 @@ export function EventReceipts() {
                 <Mail className="w-4 h-4" />
                 Bulk Resend
               </Button>
-              <Button className="flex items-center gap-2">
+              <Button onClick={exportAll} className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Export All
               </Button>
@@ -529,22 +657,15 @@ export function EventReceipts() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => viewReceipt(receipt.id)}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => downloadReceipt(receipt.id)}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => resendReceipt(receipt.id)}
                           >
