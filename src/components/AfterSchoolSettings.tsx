@@ -210,32 +210,25 @@ export function AfterSchoolSettings({ onSaveComplete }: AfterSchoolSettingsProps
           
           return (
             <Card key={period.id}>
-              <CardHeader>
-                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1 w-full">
-                    <Input
-                      value={period.name}
-                      onChange={(e) => updatePeriod(period.id, "name", e.target.value)}
-                      className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0 flex-1"
-                    />
-                    {getStatusBadge(status)}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={period.isActive}
-                      onCheckedChange={(checked) => updatePeriod(period.id, "isActive", checked)}
-                    />
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deletePeriod(period.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </CardTitle>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-lg font-semibold">
+                    {period.name}
+                  </CardTitle>
+                  {getStatusBadge(status)}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Term Name</Label>
+                  <Input
+                    value={period.name}
+                    onChange={(e) => updatePeriod(period.id, "name", e.target.value)}
+                    placeholder="Enter term name"
+                    className="text-base"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
@@ -360,6 +353,26 @@ export function AfterSchoolSettings({ onSaveComplete }: AfterSchoolSettingsProps
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    onClick={saveSettings}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => deletePeriod(period.id)}
+                    className="gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -8,6 +8,7 @@ import { Badge } from "./ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog"
 import { Label } from "./ui/label"
 import { Switch } from "./ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import {
   Search,
   Filter,
@@ -22,7 +23,12 @@ import {
   Calendar,
   CheckCircle,
   XCircle,
-  MapPin
+  MapPin,
+  Users,
+  RefreshCw,
+  Database,
+  Clock,
+  AlertCircle
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -38,6 +44,27 @@ interface User {
   createdAt: Date
   lastLogin?: Date
   permissions: string[]
+}
+
+interface StudentSyncRecord {
+  id: string
+  studentId: string
+  studentName: string
+  gradeLevel: string
+  location: string
+  syncStatus: "success" | "failed" | "pending" | "partial"
+  lastSyncDate: Date
+  syncSource: "schoolbase"
+  parentName: string
+  parentEmail: string
+  dataFields: {
+    personalInfo: "synced" | "failed" | "pending"
+    academicInfo: "synced" | "failed" | "pending"
+    parentInfo: "synced" | "failed" | "pending"
+    financialInfo: "synced" | "failed" | "pending"
+  }
+  errorMessage?: string
+  retryCount: number
 }
 
 const mockUsers: User[] = [
@@ -108,6 +135,145 @@ const mockUsers: User[] = [
   }
 ]
 
+const mockStudentSyncRecords: StudentSyncRecord[] = [
+  {
+    id: "1",
+    studentId: "STD001",
+    studentName: "Somchai Jaidee",
+    gradeLevel: "Grade 10",
+    location: "PU",
+    syncStatus: "success",
+    lastSyncDate: new Date("2025-10-14T08:30:00"),
+    syncSource: "schoolbase",
+    parentName: "Prasert Jaidee",
+    parentEmail: "prasert.j@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "synced",
+      parentInfo: "synced",
+      financialInfo: "synced"
+    },
+    retryCount: 0
+  },
+  {
+    id: "2",
+    studentId: "STD002",
+    studentName: "Nida Wongsawat",
+    gradeLevel: "Grade 9",
+    location: "SV",
+    syncStatus: "failed",
+    lastSyncDate: new Date("2025-10-14T07:15:00"),
+    syncSource: "schoolbase",
+    parentName: "Somsri Wongsawat",
+    parentEmail: "somsri.w@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "synced",
+      parentInfo: "failed",
+      financialInfo: "synced"
+    },
+    errorMessage: "Parent contact information incomplete",
+    retryCount: 2
+  },
+  {
+    id: "3",
+    studentId: "STD003",
+    studentName: "Pattana Srisawat",
+    gradeLevel: "Grade 11",
+    location: "TB",
+    syncStatus: "partial",
+    lastSyncDate: new Date("2025-10-14T06:45:00"),
+    syncSource: "schoolbase",
+    parentName: "Wanchai Srisawat",
+    parentEmail: "wanchai.s@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "synced",
+      parentInfo: "synced",
+      financialInfo: "pending"
+    },
+    errorMessage: "Financial records sync delayed",
+    retryCount: 1
+  },
+  {
+    id: "4",
+    studentId: "STD004",
+    studentName: "Apinya Thongchai",
+    gradeLevel: "Grade 8",
+    location: "CM",
+    syncStatus: "success",
+    lastSyncDate: new Date("2025-10-13T16:20:00"),
+    syncSource: "schoolbase",
+    parentName: "Narong Thongchai",
+    parentEmail: "narong.t@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "synced",
+      parentInfo: "synced",
+      financialInfo: "synced"
+    },
+    retryCount: 0
+  },
+  {
+    id: "5",
+    studentId: "STD005",
+    studentName: "Wuttichai Pongpat",
+    gradeLevel: "Grade 12",
+    location: "NB",
+    syncStatus: "pending",
+    lastSyncDate: new Date("2025-10-14T09:00:00"),
+    syncSource: "schoolbase",
+    parentName: "Sombat Pongpat",
+    parentEmail: "sombat.p@email.com",
+    dataFields: {
+      personalInfo: "pending",
+      academicInfo: "pending",
+      parentInfo: "pending",
+      financialInfo: "pending"
+    },
+    retryCount: 0
+  },
+  {
+    id: "6",
+    studentId: "STD006",
+    studentName: "Siriporn Kaewkong",
+    gradeLevel: "Grade 7",
+    location: "RY",
+    syncStatus: "success",
+    lastSyncDate: new Date("2025-10-14T08:00:00"),
+    syncSource: "schoolbase",
+    parentName: "Pichai Kaewkong",
+    parentEmail: "pichai.k@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "synced",
+      parentInfo: "synced",
+      financialInfo: "synced"
+    },
+    retryCount: 0
+  },
+  {
+    id: "7",
+    studentId: "STD007",
+    studentName: "Kittipat Rattana",
+    gradeLevel: "Grade 10",
+    location: "PU",
+    syncStatus: "failed",
+    lastSyncDate: new Date("2025-10-13T14:30:00"),
+    syncSource: "schoolbase",
+    parentName: "Anurak Rattana",
+    parentEmail: "anurak.r@email.com",
+    dataFields: {
+      personalInfo: "synced",
+      academicInfo: "failed",
+      parentInfo: "synced",
+      financialInfo: "synced"
+    },
+    errorMessage: "Grade level mismatch in SchoolBase",
+    retryCount: 3
+  }
+]
+
 const roleLabels = {
   admin: "Administrator",
   manager: "Manager",
@@ -137,11 +303,21 @@ const availablePermissions = [
 ]
 
 export function UserManagement() {
+  const [activeTab, setActiveTab] = useState("users")
+
+  // User management states
   const [users, setUsers] = useState<User[]>(mockUsers)
   const [filteredUsers, setFilteredUsers] = useState<User[]>(mockUsers)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+
+  // Student sync states
+  const [syncRecords, setSyncRecords] = useState<StudentSyncRecord[]>(mockStudentSyncRecords)
+  const [filteredSyncRecords, setFilteredSyncRecords] = useState<StudentSyncRecord[]>(mockStudentSyncRecords)
+  const [syncSearchTerm, setSyncSearchTerm] = useState("")
+  const [syncStatusFilter, setSyncStatusFilter] = useState("all")
+  const [syncLocationFilter, setSyncLocationFilter] = useState("all")
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -330,6 +506,77 @@ export function UserManagement() {
     }
   }
 
+  const applySyncFilters = () => {
+    let filtered = syncRecords
+
+    if (syncSearchTerm) {
+      filtered = filtered.filter(record =>
+        record.studentName.toLowerCase().includes(syncSearchTerm.toLowerCase()) ||
+        record.studentId.toLowerCase().includes(syncSearchTerm.toLowerCase())
+      )
+    }
+
+    if (syncStatusFilter !== "all") {
+      filtered = filtered.filter(record => record.syncStatus === syncStatusFilter)
+    }
+
+    if (syncLocationFilter !== "all") {
+      filtered = filtered.filter(record => record.location === syncLocationFilter)
+    }
+
+    setFilteredSyncRecords(filtered)
+  }
+
+  const clearSyncFilters = () => {
+    setSyncSearchTerm("")
+    setSyncStatusFilter("all")
+    setSyncLocationFilter("all")
+    setFilteredSyncRecords(syncRecords)
+  }
+
+  const getSyncStatusBadge = (status: string) => {
+    switch (status) {
+      case "success":
+        return <Badge className="bg-green-100 text-green-800 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Success</Badge>
+      case "failed":
+        return <Badge className="bg-red-100 text-red-800 flex items-center gap-1"><XCircle className="w-3 h-3" />Failed</Badge>
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800 flex items-center gap-1"><Clock className="w-3 h-3" />Pending</Badge>
+      case "partial":
+        return <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1"><AlertCircle className="w-3 h-3" />Partial</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
+  const getFieldStatusBadge = (status: string) => {
+    switch (status) {
+      case "synced":
+        return <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">Synced</Badge>
+      case "failed":
+        return <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50">Failed</Badge>
+      case "pending":
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-300 bg-yellow-50">Pending</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
+  const handleRetrySync = (recordId: string) => {
+    toast.info(`Retrying sync for record ${recordId}...`)
+    // Simulate retry logic
+    setTimeout(() => {
+      toast.success("Sync retry initiated successfully")
+    }, 1000)
+  }
+
+  const handleBulkSync = () => {
+    toast.info("Starting bulk sync from SchoolBase...")
+    setTimeout(() => {
+      toast.success("Bulk sync completed successfully")
+    }, 2000)
+  }
+
   const summaryStats = {
     totalUsers: users.length,
     activeUsers: users.filter(u => u.status === "active").length,
@@ -338,20 +585,44 @@ export function UserManagement() {
     staff: users.filter(u => u.role === "staff").length
   }
 
+  const syncStats = {
+    totalRecords: syncRecords.length,
+    successfulSyncs: syncRecords.filter(r => r.syncStatus === "success").length,
+    failedSyncs: syncRecords.filter(r => r.syncStatus === "failed").length,
+    pendingSyncs: syncRecords.filter(r => r.syncStatus === "pending").length,
+    partialSyncs: syncRecords.filter(r => r.syncStatus === "partial").length
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-semibold">User Management</h2>
           <p className="text-sm text-muted-foreground">
-            Manage user accounts, roles, and permissions
+            Manage user accounts, roles, permissions, and student sync status
           </p>
         </div>
-        <Button onClick={openCreateModal} className="flex items-center gap-2">
-          <UserPlus className="w-4 h-4" />
-          Add New User
-        </Button>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Users
+          </TabsTrigger>
+          <TabsTrigger value="student-sync" className="flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            Student Sync Status
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-6 mt-6">
+          <div className="flex justify-end">
+            <Button onClick={openCreateModal} className="flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              Add New User
+            </Button>
+          </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -836,6 +1107,237 @@ export function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+        </TabsContent>
+
+        <TabsContent value="student-sync" className="space-y-6 mt-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Student Sync Status from SchoolBase</h3>
+              <p className="text-sm text-muted-foreground">
+                Monitor and manage student data synchronization from SchoolBase
+              </p>
+            </div>
+            <Button onClick={handleBulkSync} className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Sync All Students
+            </Button>
+          </div>
+
+          {/* Sync Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Records</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{syncStats.totalRecords}</div>
+                <p className="text-xs text-muted-foreground">Student records</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Successful</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{syncStats.successfulSyncs}</div>
+                <p className="text-xs text-muted-foreground">
+                  {Math.round((syncStats.successfulSyncs / syncStats.totalRecords) * 100)}% success rate
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Failed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">{syncStats.failedSyncs}</div>
+                <p className="text-xs text-muted-foreground">Needs attention</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-600">{syncStats.pendingSyncs}</div>
+                <p className="text-xs text-muted-foreground">In queue</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Partial</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{syncStats.partialSyncs}</div>
+                <p className="text-xs text-muted-foreground">Incomplete sync</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sync Filters */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Search & Filter
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Search</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Student name or ID"
+                      value={syncSearchTerm}
+                      onChange={(e) => setSyncSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sync Status</label>
+                  <Select value={syncStatusFilter} onValueChange={setSyncStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="success">Success</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="partial">Partial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Location</label>
+                  <Select value={syncLocationFilter} onValueChange={setSyncLocationFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      {availableLocations.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={applySyncFilters}>Apply Filters</Button>
+                <Button variant="outline" onClick={clearSyncFilters}>Clear All</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Student Sync Table */}
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Grade</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Parent Information</TableHead>
+                    <TableHead>Sync Status</TableHead>
+                    <TableHead>Last Sync</TableHead>
+                    <TableHead>Retry Count</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSyncRecords.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{record.studentName}</div>
+                          <div className="text-sm text-muted-foreground">ID: {record.studentId}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{record.gradeLevel}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <MapPin className="w-3 h-3" />
+                          {record.location}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{record.parentName}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {record.parentEmail}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getSyncStatusBadge(record.syncStatus)}</TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div>{record.lastSyncDate.toLocaleDateString()}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {record.lastSyncDate.toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {record.retryCount > 0 ? (
+                            <Badge variant="outline" className="text-orange-600">
+                              {record.retryCount} {record.retryCount === 1 ? 'retry' : 'retries'}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {(record.syncStatus === "failed" || record.syncStatus === "partial") && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleRetrySync(record.id)}
+                              className="text-blue-600 hover:text-blue-700"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {record.errorMessage && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title={record.errorMessage}
+                              className="text-red-600"
+                            >
+                              <AlertCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Delete User Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>

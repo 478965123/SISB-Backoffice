@@ -253,6 +253,126 @@ export function ReceiptPage() {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)))
   }
 
+  const exportAll = () => {
+    // Helper function to escape CSV values
+    const escapeCsvValue = (value: any): string => {
+      if (value === null || value === undefined) return ''
+      const stringValue = String(value)
+      if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    // Create metadata section
+    const currentDateExport = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    const totalAmount = filteredReceipts.reduce((sum, receipt) => sum + receipt.amount, 0)
+
+    // Create empty columns to position metadata at column N (14th column, index 13)
+    const emptyColumns = new Array(10).fill('')
+
+    // Create CSV headers
+    const headers = [
+      'Receipt Number',
+      'Invoice Number',
+      'Student Name',
+      'Student ID',
+      'Grade Level',
+      'Amount (THB)',
+      'Payment Type',
+      'Payment Method',
+      'Payment Channel',
+      'Transaction Date',
+      'Term'
+    ]
+
+    // Metadata rows positioned at column L
+    const metadataRows = [
+      [...emptyColumns, escapeCsvValue('SISB Tuition Receipt Export')].join(','),
+      [...emptyColumns, escapeCsvValue(`Export Date: ${currentDateExport}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Records: ${filteredReceipts.length}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount}`)].join(','),
+      [...emptyColumns, ''].join(','),
+      [...emptyColumns, escapeCsvValue('Applied Filters:')].join(','),
+      [...emptyColumns, escapeCsvValue(`Payment Type: ${paymentTypeFilter === 'all' ? 'All Types' : paymentTypeFilter.charAt(0).toUpperCase() + paymentTypeFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Grade Level: ${gradeFilter === 'all' ? 'All Grades' : gradeFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Payment Channel: ${paymentChannelFilter === 'all' ? 'All Channels' : paymentChannelFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Search Term: ${searchTerm || 'No search applied'}`)].join(','),
+      [...emptyColumns, ''].join(','),
+    ]
+
+    // Create CSV rows
+    const csvRows = [
+      ...metadataRows,
+      headers.join(','), // Header row
+      ...filteredReceipts.map(receipt => [
+        escapeCsvValue(receipt.receiptNumber),
+        escapeCsvValue(receipt.invoiceNumber),
+        escapeCsvValue(receipt.studentName),
+        escapeCsvValue(receipt.studentId),
+        escapeCsvValue(receipt.studentGrade),
+        escapeCsvValue(receipt.amount),
+        escapeCsvValue(receipt.paymentType === 'yearly' ? 'Yearly' : 'Termly'),
+        escapeCsvValue(receipt.paymentMethod),
+        escapeCsvValue(receipt.paymentChannel),
+        escapeCsvValue(format(receipt.transactionDate, 'yyyy-MM-dd')),
+        escapeCsvValue(receipt.term)
+      ].join(',')),
+      '', // Empty row before total
+      // Total row
+      [
+        '',
+        '',
+        '',
+        '',
+        '',
+        escapeCsvValue('TOTAL'),
+        escapeCsvValue(totalAmount),
+        '',
+        '',
+        '',
+        ''
+      ].join(',')
+    ]
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n')
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+
+      // Generate filename with current date and filter info
+      const currentDate = format(new Date(), 'yyyy-MM-dd')
+      const paymentTypeText = paymentTypeFilter === 'all' ? 'all' : paymentTypeFilter
+      const gradeText = gradeFilter === 'all' ? 'all-grades' : gradeFilter.replace(/\s+/g, '-').toLowerCase()
+
+      const filename = `tuition-receipts-${paymentTypeText}-${gradeText}-${currentDate}.csv`
+      link.setAttribute('download', filename)
+
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Show success toast
+      toast.success(`Successfully exported ${filteredReceipts.length} receipt records`, {
+        description: `File: ${filename}`,
+        duration: 4000,
+      })
+    } else {
+      toast.error("Export failed", {
+        description: "Your browser does not support file downloads",
+        duration: 4000,
+      })
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -289,7 +409,7 @@ export function ReceiptPage() {
                 <Mail className="w-4 h-4" />
                 Bulk Resend
               </Button>
-              <Button className="flex items-center gap-2">
+              <Button onClick={exportAll} className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Export All
               </Button>

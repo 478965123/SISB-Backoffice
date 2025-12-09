@@ -11,7 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger
+  SidebarTrigger,
+  SidebarFooter
 } from "./components/ui/sidebar"
 import { Toaster } from "./components/ui/sonner"
 import { Button } from "./components/ui/button"
@@ -481,6 +482,12 @@ export default function App() {
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
+
+          <SidebarFooter className="p-4 border-t">
+            <div className="text-xs text-muted-foreground text-center">
+              Version 1.0.0
+            </div>
+          </SidebarFooter>
         </Sidebar>
 
         <main className="flex-1 flex flex-col">

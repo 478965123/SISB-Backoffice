@@ -29,7 +29,7 @@ interface PaymentRecord {
   paymentMethod: string
   paymentChannel: "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank"
   payerName: string
-  status: "paid" | "unpaid" | "cancelled" | "overdue"
+  status: "paid" | "unpaid" | "overdue"
   transactionDate: Date
   parentType?: "internal" | "external"
   activityType?: "ECA" | "EAS"
@@ -48,7 +48,7 @@ const generateMockPayments = (): PaymentRecord[] => {
   const paymentMethods = ["Credit Card", "PromptPay", "Bank Counter", "WeChat Pay", "Bank Transfer", "Cash"]
   const paymentChannels: ("credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank")[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
   const payerNames = ["Mr. John Smith", "Mrs. Sarah Johnson", "Mr. David Williams", "Ms. Emily Brown", "Mr. Michael Davis", "Mrs. Lisa Garcia", "Mr. James Wilson", "Ms. Maria Rodriguez"]
-  const statuses: ("paid" | "unpaid" | "cancelled" | "overdue")[] = ["paid", "paid", "paid", "unpaid", "cancelled", "overdue"]
+  const statuses: ("paid" | "unpaid" | "overdue")[] = ["paid", "paid", "paid", "unpaid", "overdue"]
 
   const payments: PaymentRecord[] = []
 
@@ -96,14 +96,13 @@ const generateMockPayments = (): PaymentRecord[] => {
       paymentChannel,
       payerName,
       status,
-      transactionDate: date,
+      transactionDate: status === "paid" ? date : new Date(), // Only set transaction date for paid status
       parentType: Math.random() > 0.7 ? "external" : "internal", // 30% external, 70% internal
       activityType,
-      referenceNumber: `REF-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+      referenceNumber: status === "paid" ? `REF-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}` : undefined, // Only set reference number for paid status
       paymentDescription: paymentType === "yearly" ? "Annual tuition fee payment for academic year 2025-2026" : "Term 1 tuition fee payment",
       dueDate: new Date(date.getTime() + 15 * 24 * 60 * 60 * 1000), // 15 days after transaction date
-      notes: status === "cancelled" ? "Payment cancelled by parent request" :
-             status === "overdue" ? "Payment overdue - reminder sent" :
+      notes: status === "overdue" ? "Payment overdue - reminder sent" :
              status === "unpaid" ? "Payment not yet received" :
              "Payment completed successfully"
     })
@@ -228,33 +227,18 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
       }
       return stringValue
     }
-    
+
     // Create metadata section
-    const currentDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    const currentDateExport = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     const totalAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0)
-    
-    const metadata = [
-      'SISB Schooney Payment History Export',
-      `Export Date: ${currentDate}`,
-      `Report Type: ${type === 'tuition' ? 'Tuition Management' : 'After School Management'}`,
-      `Total Records: ${filteredPayments.length}`,
-      `Total Amount: ฿${totalAmount.toLocaleString()}`,
-      '',
-      'Applied Filters:',
-      `- Status: ${statusFilter === 'all' ? 'All Statuses' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`,
-      `- Payment Type: ${paymentTypeFilter === 'all' ? 'All Types' : paymentTypeFilter.charAt(0).toUpperCase() + paymentTypeFilter.slice(1)}`,
-      `- Grade Level: ${gradeFilter === 'all' ? 'All Grades' : gradeFilter}`,
-      `- Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`,
-      `- Search Term: ${searchTerm || 'No search applied'}`,
-      '',
-      '--- Payment Data ---',
-      ''
-    ]
-    
+
+    // Create empty columns to position metadata at column N (14th column, index 13)
+    const emptyColumns = new Array(13).fill('')
+
     // Create CSV headers
     const headers = [
       'Invoice Number',
-      'Student Name', 
+      'Student Name',
       'Student ID',
       'Grade Level',
       'Amount (THB)',
@@ -268,10 +252,30 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
       'Due Date',
       'Notes'
     ]
-    
+
+    // Metadata rows positioned at column N
+    const metadataRows = [
+      [...emptyColumns, escapeCsvValue('SISB Schooney Payment History Export')].join(','),
+      [...emptyColumns, escapeCsvValue(`Export Date: ${currentDateExport}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Report Type: ${type === 'tuition' ? 'Tuition Management' : 'After School Management'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Records: ${filteredPayments.length}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount}`)].join(','),
+      [...emptyColumns, ''].join(','),
+      [...emptyColumns, escapeCsvValue('Applied Filters:')].join(','),
+      [...emptyColumns, escapeCsvValue(`Status: ${statusFilter === 'all' ? 'All Statuses' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Payment Type: ${type === 'tuition' ? (paymentTypeFilter === 'all' ? 'All Types' : paymentTypeFilter.charAt(0).toUpperCase() + paymentTypeFilter.slice(1)) : 'N/A'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Grade Level: ${gradeFilter === 'all' ? 'All Grades' : gradeFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Room: ${roomFilter === 'all' ? 'All Rooms' : roomFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`School Level: ${schoolLevelFilter === 'all' ? 'All Levels' : schoolLevelFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Payment Channel: ${paymentChannelFilter === 'all' ? 'All Channels' : paymentChannelFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Search Term: ${searchTerm || 'No search applied'}`)].join(','),
+      [...emptyColumns, ''].join(','),
+    ]
+
     // Create CSV rows
     const csvRows = [
-      ...metadata.map(line => escapeCsvValue(line)),
+      ...metadataRows,
       headers.join(','), // Header row
       ...filteredPayments.map(payment => [
         escapeCsvValue(payment.invoiceNumber),
@@ -284,11 +288,29 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
         escapeCsvValue(payment.paymentChannel),
         escapeCsvValue(payment.payerName),
         escapeCsvValue(payment.status.charAt(0).toUpperCase() + payment.status.slice(1)),
-        escapeCsvValue(format(payment.transactionDate, 'yyyy-MM-dd HH:mm:ss')),
+        escapeCsvValue(payment.status === 'paid' ? format(payment.transactionDate, 'yyyy-MM-dd HH:mm:ss') : ''),
         escapeCsvValue(payment.referenceNumber || ''),
         escapeCsvValue(payment.dueDate ? format(payment.dueDate, 'yyyy-MM-dd') : ''),
         escapeCsvValue(payment.notes || '')
-      ].join(','))
+      ].join(',')),
+      '', // Empty row before total
+      // Total row
+      [
+        '',
+        '',
+        '',
+        escapeCsvValue('TOTAL'),
+        escapeCsvValue(totalAmount),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ].join(',')
     ]
     
     // Create CSV content
@@ -618,7 +640,9 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                   {type === "tuition" && <TableCell>{getPaymentTypeBadge(payment.paymentType)}</TableCell>}
                   <TableCell>{getPaymentChannelLabel(payment.paymentChannel, t)}</TableCell>
                   <TableCell>{getStatusBadge(payment.status, t)}</TableCell>
-                  <TableCell>{format(payment.transactionDate, "MMM dd, yyyy")}</TableCell>
+                  <TableCell>
+                    {payment.status === "paid" ? format(payment.transactionDate, "MMM dd, yyyy") : "-"}
+                  </TableCell>
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
