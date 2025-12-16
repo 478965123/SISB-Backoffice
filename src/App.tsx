@@ -88,6 +88,7 @@ import { TripManagement } from "./components/TripManagement"
 import { FieldTripPaymentReports } from "./components/FieldTripPaymentReports"
 import { FieldTripReceipts } from "./components/FieldTripReceipts"
 import { CreditNoteManagement } from "./components/CreditNoteManagement"
+import { BranchSelector } from "./components/BranchSelector"
 
 const menuItems = {
   tuition: [
@@ -543,6 +544,7 @@ export default function App() {
                 })()}
               </h1>
             </div>
+            <BranchSelector variant="compact" />
             <LanguageSwitcher />
 
           </header>

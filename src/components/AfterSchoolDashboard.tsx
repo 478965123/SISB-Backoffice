@@ -1,14 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts"
 import { Users, Coins, Calendar, BookOpen, TrendingUp, Clock } from "lucide-react"
+import { useBranch } from "../contexts/BranchContext"
 
 const registrationData = [
-  { month: "Aug", registrations: 145, revenue: 58000 },
-  { month: "Sep", registrations: 128, revenue: 51200 },
-  { month: "Oct", registrations: 167, revenue: 66800 },
-  { month: "Nov", registrations: 189, revenue: 75600 },
-  { month: "Dec", registrations: 134, revenue: 53600 },
-  { month: "Jan", registrations: 156, revenue: 62400 }
+  { term: "Term 1", registrations: 763, revenue: 305200 },
+  { term: "Term 2", registrations: 456, revenue: 182400 },
+  { term: "Term 3", registrations: 589, revenue: 235600 }
 ]
 
 const activityPopularityData = [
@@ -40,6 +38,11 @@ const revenueByActivityData = [
 ]
 
 export function AfterSchoolDashboard() {
+  const { selectedBranch, getSelectedBranchLabel } = useBranch()
+
+  // In production, all data below should be filtered by selectedBranch
+  // Example: const filteredData = data.filter(item => item.branch === selectedBranch)
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -103,24 +106,24 @@ export function AfterSchoolDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Registration & Revenue Trends</CardTitle>
-            <p className="text-sm text-muted-foreground">Monthly registration count and revenue correlation</p>
+            <p className="text-sm text-muted-foreground">Termly registration count and revenue correlation</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={registrationData}>
+              <BarChart data={registrationData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="term" />
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
-                <Tooltip 
+                <Tooltip
                   formatter={(value, name) => [
                     name === "registrations" ? value : `฿${value.toLocaleString()}`,
                     name === "registrations" ? "Registrations" : "Revenue"
                   ]}
                 />
-                <Area yAxisId="left" type="monotone" dataKey="registrations" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                <Bar yAxisId="left" dataKey="registrations" fill="#8884d8" />
                 <Bar yAxisId="right" dataKey="revenue" fill="#82ca9d" />
-              </AreaChart>
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

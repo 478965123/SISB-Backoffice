@@ -293,7 +293,7 @@ const availableLocations = [
 const availablePermissions = [
   { id: "tuition", label: "Tuition Management" },
   { id: "afterschool", label: "ECA & EAS" },
-  { id: "events", label: "Event Management" },
+  { id: "events", label: "Event & Exam" },
   { id: "summer", label: "Camp" },
   { id: "invoice", label: "Invoice Management" },
   { id: "email", label: "Email Notifications" },

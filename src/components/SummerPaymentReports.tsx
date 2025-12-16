@@ -265,8 +265,6 @@ export function SummerPaymentReports() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="details">Payment Details</TabsTrigger>
-          <TabsTrigger value="analytics">Financial Analytics</TabsTrigger>
-          <TabsTrigger value="activities">By Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -660,20 +658,6 @@ export function SummerPaymentReports() {
               </Pagination>
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="text-center py-12">
-            <h3>Financial Analytics</h3>
-            <p className="text-muted-foreground">Advanced analytics charts would go here</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="activities" className="space-y-6">
-          <div className="text-center py-12">
-            <h3>By Activity</h3>
-            <p className="text-muted-foreground">Activity-specific reports would go here</p>
-          </div>
         </TabsContent>
       </Tabs>
     </div>

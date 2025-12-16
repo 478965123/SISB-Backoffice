@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useBranch } from "../contexts/BranchContext"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -24,9 +25,9 @@ interface PaymentRecord {
   studentGrade: string
   studentRoom: string
   schoolLevel: "nk" | "pri" | "sf"
+  location: string // Branch location (PU, SV, TB, CM, NB, RY)
   amount: number
   paymentType: "yearly" | "termly"
-  paymentMethod: string
   paymentChannel: "credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank"
   payerName: string
   status: "paid" | "unpaid" | "overdue"
@@ -43,9 +44,9 @@ interface PaymentRecord {
 const generateMockPayments = (): PaymentRecord[] => {
   const grades = ["Reception", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12"]
   const rooms = ["A", "B", "C", "D", "E", "F", "G", "H"]
+  const locations = ["PU", "SV", "TB", "CM", "NB", "RY"]
   const firstNames = ["John", "Sarah", "Mike", "Lisa", "David", "Emma", "James", "Sophia", "William", "Olivia", "Benjamin", "Ava", "Lucas", "Isabella", "Henry", "Mia", "Alexander", "Charlotte", "Mason", "Amelia", "Ethan", "Harper", "Daniel", "Evelyn", "Matthew", "Abigail", "Jackson", "Emily", "Sebastian", "Elizabeth", "Jack", "Sofia", "Aiden", "Avery", "Owen", "Ella", "Samuel", "Madison", "Gabriel", "Scarlett", "Carter", "Victoria", "Wyatt", "Aria", "Jayden", "Grace", "John", "Chloe", "Luke", "Camila", "Anthony", "Penelope", "Isaac", "Riley"]
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts"]
-  const paymentMethods = ["Credit Card", "PromptPay", "Bank Counter", "WeChat Pay", "Bank Transfer", "Cash"]
   const paymentChannels: ("credit_card" | "wechat_pay" | "alipay" | "qr_payment" | "counter_bank")[] = ["credit_card", "wechat_pay", "alipay", "qr_payment", "counter_bank"]
   const payerNames = ["Mr. John Smith", "Mrs. Sarah Johnson", "Mr. David Williams", "Ms. Emily Brown", "Mr. Michael Davis", "Mrs. Lisa Garcia", "Mr. James Wilson", "Ms. Maria Rodriguez"]
   const statuses: ("paid" | "unpaid" | "overdue")[] = ["paid", "paid", "paid", "unpaid", "overdue"]
@@ -74,13 +75,13 @@ const generateMockPayments = (): PaymentRecord[] => {
     const paymentType = Math.random() > 0.6 ? "yearly" : "termly"
     const amount = paymentType === "yearly" ? 125000 : 42000
     const status = statuses[Math.floor(Math.random() * statuses.length)]
-    const paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)]
     const paymentChannel = paymentChannels[Math.floor(Math.random() * paymentChannels.length)]
     const payerName = payerNames[Math.floor(Math.random() * payerNames.length)]
 
     const date = new Date()
     date.setDate(date.getDate() - Math.floor(Math.random() * 90))
     const activityType: "ECA" | "EAS" = Math.random() > 0.5 ? "ECA" : "EAS"
+    const location = locations[Math.floor(Math.random() * locations.length)]
 
     payments.push({
       id: i.toString(),
@@ -90,9 +91,9 @@ const generateMockPayments = (): PaymentRecord[] => {
       studentGrade: grade,
       studentRoom: room,
       schoolLevel,
+      location,
       amount,
       paymentType,
-      paymentMethod,
       paymentChannel,
       payerName,
       status,
@@ -120,8 +121,10 @@ interface PaymentHistoryProps {
 
 export function PaymentHistory({ type = "tuition", initialStatusFilter }: PaymentHistoryProps) {
   const { t } = useTranslation()
-  const [payments] = useState<PaymentRecord[]>(mockPayments)
-  const [filteredPayments, setFilteredPayments] = useState<PaymentRecord[]>(mockPayments)
+  const { selectedBranch } = useBranch()
+
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
+  const [filteredPayments, setFilteredPayments] = useState<PaymentRecord[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<PaymentStatus>(initialStatusFilter || "all")
   const [paymentTypeFilter, setPaymentTypeFilter] = useState("all")
@@ -137,6 +140,14 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  // Filter payments by selected branch whenever branch changes
+  useEffect(() => {
+    const branchFilteredPayments = mockPayments.filter(payment => payment.location === selectedBranch)
+    setPayments(branchFilteredPayments)
+    setFilteredPayments(branchFilteredPayments)
+    setCurrentPage(1) // Reset to first page when branch changes
+  }, [selectedBranch])
 
   // Apply filters when initialStatusFilter changes
   useEffect(() => {
@@ -232,8 +243,8 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
     const currentDateExport = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     const totalAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0)
 
-    // Create empty columns to position metadata at column N (14th column, index 13)
-    const emptyColumns = new Array(13).fill('')
+    // Create empty columns to position metadata at column N (13th column, index 12)
+    const emptyColumns = new Array(12).fill('')
 
     // Create CSV headers
     const headers = [
@@ -243,7 +254,6 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
       'Grade Level',
       'Amount (THB)',
       'Payment Type',
-      'Payment Method',
       'Payment Channel',
       'Payer Name',
       'Status',
@@ -259,7 +269,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
       [...emptyColumns, escapeCsvValue(`Export Date: ${currentDateExport}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Report Type: ${type === 'tuition' ? 'Tuition Management' : 'After School Management'}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Total Records: ${filteredPayments.length}`)].join(','),
-      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Total Amount: ${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)].join(','),
       [...emptyColumns, ''].join(','),
       [...emptyColumns, escapeCsvValue('Applied Filters:')].join(','),
       [...emptyColumns, escapeCsvValue(`Status: ${statusFilter === 'all' ? 'All Statuses' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`)].join(','),
@@ -282,9 +292,8 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
         escapeCsvValue(payment.studentName),
         escapeCsvValue(payment.studentId),
         escapeCsvValue(payment.studentGrade),
-        escapeCsvValue(payment.amount),
+        escapeCsvValue(payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
         escapeCsvValue(payment.paymentType === 'yearly' ? 'Yearly' : 'Termly'),
-        escapeCsvValue(payment.paymentMethod),
         escapeCsvValue(payment.paymentChannel),
         escapeCsvValue(payment.payerName),
         escapeCsvValue(payment.status.charAt(0).toUpperCase() + payment.status.slice(1)),
@@ -300,8 +309,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
         '',
         '',
         escapeCsvValue('TOTAL'),
-        escapeCsvValue(totalAmount),
-        '',
+        escapeCsvValue(totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
         '',
         '',
         '',
@@ -319,25 +327,25 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
     // Create and download file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
-    
+
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob)
       link.setAttribute('href', url)
-      
+
       // Generate filename with current date and filter info
       const currentDate = format(new Date(), 'yyyy-MM-dd')
       const paymentTypeText = paymentTypeFilter === 'all' ? 'all' : paymentTypeFilter
       const statusText = statusFilter === 'all' ? 'all' : statusFilter
       const gradeText = gradeFilter === 'all' ? 'all-grades' : gradeFilter.replace(/\s+/g, '-').toLowerCase()
-      
+
       const filename = `payment-history-${type}-${paymentTypeText}-${statusText}-${gradeText}-${currentDate}.csv`
       link.setAttribute('download', filename)
-      
+
       link.style.visibility = 'hidden'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       // Show success toast
       toast.success(`Successfully exported ${filteredPayments.length} payment records`, {
         description: `File: ${filename}`,
@@ -710,15 +718,11 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                                   <div>{getPaymentTypeBadge(payment.paymentType)}</div>
                                 </div>
                                 <div>
-                                  <p className="text-sm text-muted-foreground">{t('paymentHistory.paymentMethod')}</p>
+                                  <p className="text-sm text-muted-foreground">{t('paymentHistory.paymentChannel')}</p>
                                   <div className="flex items-center gap-2">
                                     <CreditCard className="w-4 h-4" />
-                                    <span>{payment.paymentMethod}</span>
+                                    <span>{getPaymentChannelLabel(payment.paymentChannel, t)}</span>
                                   </div>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-muted-foreground">{t('paymentHistory.paymentChannel')}</p>
-                                  <p>{payment.paymentChannel}</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-muted-foreground">{t('paymentHistory.payerName')}</p>
