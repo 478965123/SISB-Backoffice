@@ -59,7 +59,7 @@ const mockStudents = [
   { id: "ST001304", name: "Ryan Davis", grade: "Year 10", room: "10A", parentName: "Jennifer Davis", email: "jennifer.davis@email.com" },
   { id: "ST001305", name: "Maya Patel", grade: "Year 10", room: "10B", parentName: "Raj Patel", email: "raj.patel@email.com" },
   { id: "ST001306", name: "Daniel Kim", grade: "Year 10", room: "10C", parentName: "Grace Kim", email: "grace.kim@email.com" },
-  
+
   // Year 7 students
   { id: "ST001235", name: "Sarah Wilson", grade: "Year 7", room: "7B", parentName: "Michael Wilson", email: "michael.wilson@email.com" },
   { id: "ST001241", name: "Anna Martinez", grade: "Year 7", room: "7A", parentName: "Carlos Martinez", email: "carlos.martinez@email.com" },
@@ -71,28 +71,28 @@ const mockStudents = [
   { id: "ST001311", name: "Noah Garcia", grade: "Year 7", room: "7B", parentName: "Maria Garcia", email: "maria.garcia@email.com" },
   { id: "ST001312", name: "Ava Singh", grade: "Year 7", room: "7C", parentName: "Preet Singh", email: "preet.singh@email.com" },
   { id: "ST001313", name: "Ethan Brown", grade: "Year 7", room: "7D", parentName: "Rachel Brown", email: "rachel.brown@email.com" },
-  
+
   // Year 12 students
   { id: "ST001236", name: "Mike Johnson", grade: "Year 12", room: "12A", parentName: "Lisa Johnson", email: "lisa.johnson@email.com" },
   { id: "ST001314", name: "Victoria Chang", grade: "Year 12", room: "12A", parentName: "Peter Chang", email: "peter.chang@email.com" },
   { id: "ST001315", name: "James Miller", grade: "Year 12", room: "12B", parentName: "Amanda Miller", email: "amanda.miller@email.com" },
   { id: "ST001316", name: "Emma Taylor", grade: "Year 12", room: "12A", parentName: "David Taylor", email: "david.taylor@email.com" },
   { id: "ST001317", name: "William Chen", grade: "Year 12", room: "12B", parentName: "Linda Chen", email: "linda.chen@email.com" },
-  
+
   // Year 3 students
   { id: "ST001237", name: "Emma Davis", grade: "Year 3", room: "3C", parentName: "David Davis", email: "david.davis@email.com" },
   { id: "ST001318", name: "Logan White", grade: "Year 3", room: "3A", parentName: "Karen White", email: "karen.white@email.com" },
   { id: "ST001319", name: "Zoe Martin", grade: "Year 3", room: "3B", parentName: "Steven Martin", email: "steven.martin@email.com" },
   { id: "ST001320", name: "Mason Harris", grade: "Year 3", room: "3C", parentName: "Nicole Harris", email: "nicole.harris@email.com" },
   { id: "ST001321", name: "Lily Thompson", grade: "Year 3", room: "3D", parentName: "Brian Thompson", email: "brian.thompson@email.com" },
-  
+
   // Year 1 students
   { id: "ST001322", name: "Henry Wilson", grade: "Year 1", room: "1A", parentName: "Sophie Wilson", email: "sophie.wilson@email.com" },
   { id: "ST001323", name: "Grace Moore", grade: "Year 1", room: "1B", parentName: "Thomas Moore", email: "thomas.moore@email.com" },
   { id: "ST001324", name: "Jack Robinson", grade: "Year 1", room: "1C", parentName: "Emma Robinson", email: "emma.robinson@email.com" },
   { id: "ST001325", name: "Ruby Clark", grade: "Year 1", room: "1D", parentName: "Paul Clark", email: "paul.clark@email.com" },
   { id: "ST001326", name: "Oscar Lewis", grade: "Year 1", room: "1A", parentName: "Catherine Lewis", email: "catherine.lewis@email.com" },
-  
+
   // Reception students
   { id: "ST001327", name: "Mia Walker", grade: "Reception", room: "Reception A", parentName: "Daniel Walker", email: "daniel.walker@email.com" },
   { id: "ST001328", name: "Charlie Hall", grade: "Reception", room: "Reception B", parentName: "Jessica Hall", email: "jessica.hall@email.com" },
@@ -242,7 +242,7 @@ const mockTemplates: ItemTemplate[] = [
     isActive: true
   },
   {
-    id: "template-002", 
+    id: "template-002",
     name: "Year 1 Basic Tuition",
     description: "Essential tuition fees only for Year 1",
     items: ["item-001", "item-002", "item-003"],
@@ -280,21 +280,21 @@ const formatCurrency = (amount: number): string => {
 }
 
 const itemCategories = [
-  { 
-    id: "Tuition", 
-    label: "Tuition", 
+  {
+    id: "Tuition",
+    label: "Tuition",
     icon: GraduationCap,
     description: "Academic fees and school essentials"
   },
-  { 
-    id: "ECA", 
-    label: "ECA", 
+  {
+    id: "ECA",
+    label: "ECA",
     icon: Zap,
     description: "Extra-curricular activities"
   },
-  { 
-    id: "Trip & Other Activity", 
-    label: "Trip & Other Activity", 
+  {
+    id: "Trip & Other Activity",
+    label: "Trip & Other Activity",
     icon: MapPin,
     description: "Field trips and special events"
   }
@@ -310,24 +310,24 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
   // Create invoice state
   const [selectedGrade, setSelectedGrade] = useState("")
   const [selectedRoom, setSelectedRoom] = useState("")
-  
+
   // Tuition type selection (only for tuition-only invoices)
   const [tuitionType, setTuitionType] = useState<"yearly" | "termly" | "">("")
-  
+
   // Payment deadline
   const [paymentDeadline, setPaymentDeadline] = useState("")
-  
+
   // Preview and confirmation states
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
-  
+
   // Student selection state
   const [studentSelectionType, setStudentSelectionType] = useState<"individual" | "csv" | "all">("individual")
   const [searchStudentTerm, setSearchStudentTerm] = useState("")
   const [selectedStudents, setSelectedStudents] = useState<any[]>([])
   const [csvFile, setCsvFile] = useState<File | null>(null)
   const [csvStudents, setCsvStudents] = useState<any[]>([])
-  
+
   // Item selection state
   const [availableItems, setAvailableItems] = useState<PreCreatedItem[]>([])
   const [selectedItems, setSelectedItems] = useState<PreCreatedItem[]>([])
@@ -347,17 +347,17 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
     setTuitionType("")
     setPaymentDeadline("")
     setIsPreviewMode(false)
-    
+
     // Filter available items for this grade and category
-    const gradeItems = mockPreCreatedItems.filter(item => 
-      item.isActive && 
+    const gradeItems = mockPreCreatedItems.filter(item =>
+      item.isActive &&
       item.applicableGrades.includes(grade) &&
       item.category === (defaultCategory || "Tuition")
     )
     setAvailableItems(gradeItems)
 
     // Filter available templates for this grade
-    const gradeTemplates = mockTemplates.filter(template => 
+    const gradeTemplates = mockTemplates.filter(template =>
       template.isActive && template.applicableGrades.includes(grade)
     )
     setAvailableTemplates(gradeTemplates)
@@ -372,10 +372,10 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category)
     setTuitionType("")
-    
+
     // Filter available items for selected grade and new category
-    const categoryItems = mockPreCreatedItems.filter(item => 
-      item.isActive && 
+    const categoryItems = mockPreCreatedItems.filter(item =>
+      item.isActive &&
       item.applicableGrades.includes(selectedGrade) &&
       item.category === category
     )
@@ -384,7 +384,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
 
   // Check if any tuition items are selected
   const hasTuitionSelected = selectedItems.some(item => item.category === "Tuition")
-  
+
   // Check if only tuition items are selected
   const isOnlyTuitionSelected = selectedItems.length > 0 && selectedItems.every(item => item.category === "Tuition")
 
@@ -396,9 +396,9 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
     return false
   }
 
-  const filteredStudents = mockStudents.filter(student => 
+  const filteredStudents = mockStudents.filter(student =>
     (student.id.toLowerCase().includes(searchStudentTerm.toLowerCase()) ||
-     student.name.toLowerCase().includes(searchStudentTerm.toLowerCase())) &&
+      student.name.toLowerCase().includes(searchStudentTerm.toLowerCase())) &&
     student.grade === selectedGrade &&
     (selectedRoom === "" || student.room === selectedRoom) &&
     !selectedStudents.find(s => s.id === student.id)
@@ -414,8 +414,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
   }
 
   const handleSelectAllStudents = () => {
-    const gradeStudents = mockStudents.filter(s => 
-      s.grade === selectedGrade && 
+    const gradeStudents = mockStudents.filter(s =>
+      s.grade === selectedGrade &&
       (selectedRoom === "" || s.room === selectedRoom)
     )
     setSelectedStudents(gradeStudents)
@@ -467,13 +467,13 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
       const templateItems = template.items
         .map(itemId => mockPreCreatedItems.find(item => item.id === itemId))
         .filter(item => item !== undefined) as PreCreatedItem[]
-      
+
       // Merge template items with existing selected items (avoid duplicates)
-      const existingItems = selectedItems.filter(item => 
+      const existingItems = selectedItems.filter(item =>
         !template.items.includes(item.id)
       )
       const allItems = [...templateItems, ...existingItems]
-      
+
       setSelectedItems(allItems)
       toast.success(`Applied template: ${template.name}. You can still add more items.`)
     }
@@ -500,7 +500,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
 
   const handleFinalConfirmation = () => {
     const totalItems = selectedItems.reduce((sum, item) => sum + item.amount, 0)
-    
+
     // Create invoice data for email sending
     const invoiceData = {
       invoiceNumber: `INV-${Date.now()}`,
@@ -516,14 +516,14 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
       createdAt: new Date().toISOString(),
       status: 'created'
     }
-    
+
     toast.success(`Successfully created ${selectedStudents.length} invoices!`)
-    
+
     // Navigate to email sending page with invoice data
     if (onNavigateToEmailSending) {
       onNavigateToEmailSending(invoiceData)
     }
-    
+
     // Reset form
     setSelectedGrade("")
     setSelectedRoom("")
@@ -570,13 +570,13 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
             {/* Step 2: Select Room */}
             {selectedGrade && (
               <div className="space-y-3">
-                <h3 className="font-medium">2. Select Room (Optional)</h3>
+                <h3 className="font-medium">2. Select Class (Optional)</h3>
                 <Select value={selectedRoom === "" ? "all" : selectedRoom} onValueChange={handleRoomChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose room or leave blank for all rooms" />
+                    <SelectValue placeholder="Choose class or leave blank for all classes" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Rooms</SelectItem>
+                    <SelectItem value="all">All Classes</SelectItem>
                     {rooms[selectedGrade as keyof typeof rooms]?.map(room => (
                       <SelectItem key={room} value={room}>{room}</SelectItem>
                     ))}
@@ -589,7 +589,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
             {selectedGrade && (
               <div className="space-y-4">
                 <h3 className="font-medium">3. Select Items</h3>
-                
+
                 {/* Template Selection */}
                 {availableTemplates.length > 0 && (
                   <div className="space-y-3">
@@ -599,8 +599,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         <label className="font-medium">Quick Start Templates</label>
                       </div>
                       {selectedTemplate && (
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleTemplateSelect("none")}
                         >
@@ -608,7 +608,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         </Button>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {availableTemplates.map((template) => {
                         const isSelected = selectedTemplate === template.id
@@ -616,10 +616,10 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                           const item = mockPreCreatedItems.find(i => i.id === itemId)
                           return sum + (item?.amount || 0)
                         }, 0)
-                        
+
                         return (
-                          <Card 
-                            key={template.id} 
+                          <Card
+                            key={template.id}
                             className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"}`}
                             onClick={() => handleTemplateSelect(isSelected ? "none" : template.id)}
                           >
@@ -633,15 +633,15 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                                   <CheckCircle className="w-5 h-5 text-primary" />
                                 )}
                               </div>
-                              
+
                               <p className="text-sm text-muted-foreground mb-3">{template.description}</p>
-                              
+
                               <div className="space-y-2">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm font-medium">Items: {template.items.length}</span>
                                   <span className="font-medium">{formatCurrency(totalAmount)}</span>
                                 </div>
-                                
+
                                 <div className="flex flex-wrap gap-1">
                                   {template.applicableGrades.slice(0, 2).map(grade => (
                                     <Badge key={grade} variant="secondary" className="text-xs">
@@ -660,7 +660,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         )
                       })}
                     </div>
-                    
+
                     {selectedTemplate && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <div className="flex justify-between items-start">
@@ -697,7 +697,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                   <div className="space-y-3">
                     <label className="font-medium">Tuition Payment Type</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <Card 
+                      <Card
                         className={`cursor-pointer transition-all ${tuitionType === "yearly" ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"}`}
                         onClick={() => setTuitionType("yearly")}
                       >
@@ -714,7 +714,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         </CardContent>
                       </Card>
 
-                      <Card 
+                      <Card
                         className={`cursor-pointer transition-all ${tuitionType === "termly" ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"}`}
                         onClick={() => setTuitionType("termly")}
                       >
@@ -735,7 +735,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                     {tuitionType && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                         <p className="text-sm text-yellow-700">
-                          <span className="font-medium">Note:</span> {tuitionType === "yearly" ? "Yearly" : "Termly"} payment selected. 
+                          <span className="font-medium">Note:</span> {tuitionType === "yearly" ? "Yearly" : "Termly"} payment selected.
                           ECA and Trip & Other Activity categories are now disabled.
                         </p>
                         {!isOnlyTuitionSelected && (
@@ -755,26 +755,24 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                     {itemCategories.map((category) => {
                       const isDisabled = isCategoryDisabled(category.id)
                       return (
-                        <Card 
+                        <Card
                           key={category.id}
-                          className={`cursor-pointer transition-all ${
-                            isDisabled 
-                              ? "opacity-50 cursor-not-allowed" 
-                              : selectedCategory === category.id 
-                                ? "ring-2 ring-primary bg-primary/5" 
+                          className={`cursor-pointer transition-all ${isDisabled
+                              ? "opacity-50 cursor-not-allowed"
+                              : selectedCategory === category.id
+                                ? "ring-2 ring-primary bg-primary/5"
                                 : "hover:bg-muted/50"
-                          }`}
+                            }`}
                           onClick={() => !isDisabled && handleCategoryChange(category.id)}
                         >
                           <CardContent className="p-4">
                             <div className="flex flex-col items-center text-center space-y-2">
-                              <category.icon className={`w-6 h-6 ${
-                                isDisabled 
-                                  ? "text-muted-foreground/50" 
-                                  : selectedCategory === category.id 
-                                    ? "text-primary" 
+                              <category.icon className={`w-6 h-6 ${isDisabled
+                                  ? "text-muted-foreground/50"
+                                  : selectedCategory === category.id
+                                    ? "text-primary"
                                     : "text-muted-foreground"
-                              }`} />
+                                }`} />
                               <div>
                                 <h4 className={`font-medium text-sm ${isDisabled ? "text-muted-foreground/50" : ""}`}>
                                   {category.label}
@@ -805,8 +803,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                       const isSelected = selectedItems.find(i => i.id === item.id)
                       const isFromTemplate = selectedTemplate && availableTemplates.find(t => t.id === selectedTemplate)?.items.includes(item.id)
                       return (
-                        <Card 
-                          key={item.id} 
+                        <Card
+                          key={item.id}
                           className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"}`}
                           onClick={() => isSelected ? handleItemRemove(item.id) : handleItemSelect(item)}
                         >
@@ -815,13 +813,12 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h4 className="font-medium">{item.name}</h4>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-xs ${
-                                      item.category === "Tuition" ? "border-blue-300 text-blue-700" :
-                                      item.category === "ECA" ? "border-green-300 text-green-700" :
-                                      "border-orange-300 text-orange-700"
-                                    }`}
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${item.category === "Tuition" ? "border-blue-300 text-blue-700" :
+                                        item.category === "ECA" ? "border-green-300 text-green-700" :
+                                          "border-orange-300 text-orange-700"
+                                      }`}
                                   >
                                     {item.category}
                                   </Badge>
@@ -864,8 +861,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                           Total: {formatCurrency(getTotalAmount())}
                         </p>
                       </div>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           setSelectedItems([])
@@ -875,7 +872,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         Clear All Items
                       </Button>
                     </div>
-                    
+
                     <div className="border rounded-lg">
                       <Table>
                         <TableHeader>
@@ -905,13 +902,12 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge 
+                                  <Badge
                                     variant="outline"
-                                    className={`${
-                                      item.category === "Tuition" ? "border-blue-300 text-blue-700" :
-                                      item.category === "ECA" ? "border-green-300 text-green-700" :
-                                      "border-orange-300 text-orange-700"
-                                    }`}
+                                    className={`${item.category === "Tuition" ? "border-blue-300 text-blue-700" :
+                                        item.category === "ECA" ? "border-green-300 text-green-700" :
+                                          "border-orange-300 text-orange-700"
+                                      }`}
                                   >
                                     {item.category}
                                   </Badge>
@@ -972,7 +968,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
             {selectedItems.length > 0 && paymentDeadline && (
               <div className="space-y-4">
                 <h3 className="font-medium">5. Select Students</h3>
-                
+
                 {/* Selection Type */}
                 <div className="grid grid-cols-3 gap-4">
                   <Card className={`cursor-pointer transition-all ${studentSelectionType === "individual" ? "ring-2 ring-primary" : ""}`}>
@@ -1006,7 +1002,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                       </div>
                       <h4 className="font-medium text-center text-sm">All Students</h4>
                       <p className="text-xs text-muted-foreground text-center mt-1">
-                        Select entire {selectedRoom ? "room" : "grade"}
+                        Select entire {selectedRoom ? "class" : "grade"}
                       </p>
                     </CardContent>
                   </Card>
@@ -1024,7 +1020,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         className="pl-10"
                       />
                     </div>
-                    
+
                     {searchStudentTerm && (
                       <div className="border rounded-lg max-h-48 overflow-y-auto">
                         {filteredStudents.length > 0 ? (
@@ -1086,8 +1082,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                         Select all students in {selectedGrade} {selectedRoom && `- ${selectedRoom}`}
                       </p>
                       <p className="text-sm text-blue-600 mb-3">
-                        {mockStudents.filter(s => 
-                          s.grade === selectedGrade && 
+                        {mockStudents.filter(s =>
+                          s.grade === selectedGrade &&
                           (selectedRoom === "" || s.room === selectedRoom)
                         ).length} students will be selected
                       </p>
@@ -1103,8 +1099,8 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <label className="font-medium">Selected Students ({selectedStudents.length})</label>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setSelectedStudents([])}
                       >
@@ -1139,14 +1135,14 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
             {selectedStudents.length > 0 && selectedItems.length > 0 && paymentDeadline && (
               <div className="space-y-4">
                 <h3 className="font-medium">6. {isPreviewMode ? "Confirm and Send" : "Preview Invoice"}</h3>
-                
+
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-medium text-blue-900 mb-2">Invoice Summary</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-blue-700">Grade: <span className="font-medium">{selectedGrade}</span></p>
                       {selectedRoom && (
-                        <p className="text-blue-700">Room: <span className="font-medium">{selectedRoom}</span></p>
+                        <p className="text-blue-700">Class: <span className="font-medium">{selectedRoom}</span></p>
                       )}
                       <p className="text-blue-700">Students: <span className="font-medium">{selectedStudents.length}</span></p>
                       <p className="text-blue-700">Items per Invoice: <span className="font-medium">{selectedItems.length}</span></p>
@@ -1158,7 +1154,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                       <p className="text-blue-700">Invoices to Create: <span className="font-medium">{selectedStudents.length}</span></p>
                     </div>
                   </div>
-                  
+
                   {tuitionType && (
                     <div className="mt-3 pt-3 border-t border-blue-200">
                       <p className="text-blue-700">Payment Type: <span className="font-medium capitalize">{tuitionType}</span></p>
@@ -1168,7 +1164,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
 
                 <div className="flex gap-3 pt-4">
                   {!isPreviewMode ? (
-                    <Button 
+                    <Button
                       onClick={handlePreviewInvoice}
                       className="flex-1 flex items-center justify-center gap-2"
                     >
@@ -1176,7 +1172,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                       Preview Invoice
                     </Button>
                   ) : (
-                    <Button 
+                    <Button
                       onClick={handleConfirmAndSendEmail}
                       className="flex-1 flex items-center justify-center gap-2"
                     >
@@ -1200,7 +1196,7 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
               Are you sure you want to create and send {selectedStudents.length} invoices via email?
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="bg-muted rounded-lg p-3">
               <div className="text-sm space-y-1">
@@ -1210,16 +1206,16 @@ export function InvoiceCreation({ defaultCategory, invoiceType, onNavigateToEmai
                 <p><span className="font-medium">Payment deadline:</span> {new Date(paymentDeadline).toLocaleDateString()}</p>
               </div>
             </div>
-            
+
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setIsConfirmationOpen(false)}
                 className="flex-1"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleFinalConfirmation}
                 className="flex-1"
               >

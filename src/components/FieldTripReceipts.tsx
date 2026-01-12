@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Label } from "./ui/label"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
@@ -404,67 +405,85 @@ export function FieldTripReceipts() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by receipt, participant, trip..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8"
-                  />
+                <div className="grid gap-2">
+                  <Label>Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by receipt, participant, trip..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <Input
-                    type="date"
-                    placeholder="From date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                  />
-                  <Input
-                    type="date"
-                    placeholder="To date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                  />
+                  <div className="grid gap-2 flex-1">
+                    <Label>From Date</Label>
+                    <Input
+                      type="date"
+                      placeholder="From date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2 flex-1">
+                    <Label>To Date</Label>
+                    <Input
+                      type="date"
+                      placeholder="To date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Select value={tripFilter} onValueChange={setTripFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Trips" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Trips</SelectItem>
-                    {uniqueTrips.map(trip => (
-                      <SelectItem key={trip.id} value={trip.id}>
-                        {trip.id} - {trip.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid gap-2">
+                  <Label>Trip</Label>
+                  <Select value={tripFilter} onValueChange={setTripFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Trips" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Trips</SelectItem>
+                      {uniqueTrips.map(trip => (
+                        <SelectItem key={trip.id} value={trip.id}>
+                          {trip.id} - {trip.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <Select value={campusFilter} onValueChange={setCampusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Campuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Campuses</SelectItem>
-                    {uniqueCampuses.map(campus => (
-                      <SelectItem key={campus} value={campus}>{campus}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid gap-2">
+                  <Label>Campus</Label>
+                  <Select value={campusFilter} onValueChange={setCampusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Campuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Campuses</SelectItem>
+                      {uniqueCampuses.map(campus => (
+                        <SelectItem key={campus} value={campus}>{campus}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <Select value={participantTypeFilter} onValueChange={setParticipantTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Participants" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Participants</SelectItem>
-                    <SelectItem value="internal">Internal Students</SelectItem>
-                    <SelectItem value="external">External Participants</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid gap-2">
+                  <Label>Participant Type</Label>
+                  <Select value={participantTypeFilter} onValueChange={setParticipantTypeFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Participants" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Participants</SelectItem>
+                      <SelectItem value="internal">Internal Students</SelectItem>
+                      <SelectItem value="external">External Participants</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Button onClick={applyFilters} className="w-full md:w-auto">
                 Apply Filters

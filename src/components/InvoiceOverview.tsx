@@ -281,7 +281,7 @@ export function InvoiceOverview() {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-      
+
       toast.success(`Invoice ${invoice.invoiceNumber} downloaded`)
     }
   }
@@ -481,13 +481,13 @@ export function InvoiceOverview() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Room</label>
+                <label className="text-sm font-medium">Class</label>
                 <Select value={roomFilter} onValueChange={setRoomFilter}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Rooms</SelectItem>
+                    <SelectItem value="all">All Classes</SelectItem>
                     {uniqueRooms.map((room) => (
                       <SelectItem key={room} value={room}>
                         {room}
@@ -591,7 +591,7 @@ export function InvoiceOverview() {
               {currentPageInvoices.map((invoice) => {
                 const daysUntilDue = getDaysUntilDue(invoice.dueDate)
                 const isUrgent = daysUntilDue <= 7 && invoice.status === "unpaid"
-                
+
                 return (
                   <TableRow key={invoice.id} className={isUrgent ? "bg-red-50" : ""}>
                     <TableCell className="font-mono text-sm">
@@ -634,17 +634,17 @@ export function InvoiceOverview() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => openInvoiceDetail(invoice)}
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        
-                        <Button 
-                          size="sm" 
+
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => downloadInvoice(invoice.id)}
                           title="Download Invoice"
@@ -653,8 +653,8 @@ export function InvoiceOverview() {
                         </Button>
 
                         {(invoice.status === "unpaid" || invoice.status === "overdue") && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => sendReminder(invoice.id)}
                             title="Send Reminder"
@@ -695,16 +695,16 @@ export function InvoiceOverview() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={() => goToPage(currentPage - 1)}
                   className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
-              
+
               {/* First page */}
               {currentPage > 2 && (
                 <>
@@ -720,7 +720,7 @@ export function InvoiceOverview() {
                   )}
                 </>
               )}
-              
+
               {/* Previous page */}
               {currentPage > 1 && (
                 <PaginationItem>
@@ -729,14 +729,14 @@ export function InvoiceOverview() {
                   </PaginationLink>
                 </PaginationItem>
               )}
-              
+
               {/* Current page */}
               <PaginationItem>
                 <PaginationLink isActive>
                   {currentPage}
                 </PaginationLink>
               </PaginationItem>
-              
+
               {/* Next page */}
               {currentPage < totalPages && (
                 <PaginationItem>
@@ -745,7 +745,7 @@ export function InvoiceOverview() {
                   </PaginationLink>
                 </PaginationItem>
               )}
-              
+
               {/* Last page */}
               {currentPage < totalPages - 1 && (
                 <>
@@ -761,16 +761,16 @@ export function InvoiceOverview() {
                   </PaginationItem>
                 </>
               )}
-              
+
               <PaginationItem>
-                <PaginationNext 
+                <PaginationNext
                   onClick={() => goToPage(currentPage + 1)}
                   className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-          
+
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Go to page:</span>
             <Input
@@ -802,7 +802,7 @@ export function InvoiceOverview() {
               View complete invoice information, payment status, and send reminders
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedInvoice && (
             <div className="space-y-6">
               {/* Invoice Number and Status */}
@@ -923,7 +923,7 @@ export function InvoiceOverview() {
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
-                <Button 
+                <Button
                   className="flex-1"
                   onClick={() => {
                     toast.success("Invoice downloaded successfully")
@@ -933,10 +933,10 @@ export function InvoiceOverview() {
                   <Download className="w-4 h-4 mr-2" />
                   Download Invoice
                 </Button>
-                
+
                 {(selectedInvoice.status === "unpaid" || selectedInvoice.status === "overdue") && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => {
                       sendReminder(selectedInvoice.id)
@@ -947,7 +947,7 @@ export function InvoiceOverview() {
                     Send Reminder
                   </Button>
                 )}
-                
+
                 <Button variant="ghost" onClick={closeModal}>
                   <X className="w-4 h-4 mr-2" />
                   Close

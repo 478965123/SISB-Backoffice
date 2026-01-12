@@ -104,8 +104,8 @@ const generateMockPayments = (): PaymentRecord[] => {
       paymentDescription: paymentType === "yearly" ? "Annual tuition fee payment for academic year 2025-2026" : "Term 1 tuition fee payment",
       dueDate: new Date(date.getTime() + 15 * 24 * 60 * 60 * 1000), // 15 days after transaction date
       notes: status === "overdue" ? "Payment overdue - reminder sent" :
-             status === "unpaid" ? "Payment not yet received" :
-             "Payment completed successfully"
+        status === "unpaid" ? "Payment not yet received" :
+          "Payment completed successfully"
     })
   }
 
@@ -160,7 +160,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
     let filtered = payments
 
     if (searchTerm) {
-      filtered = filtered.filter(payment => 
+      filtered = filtered.filter(payment =>
         payment.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         payment.studentId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -275,7 +275,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
       [...emptyColumns, escapeCsvValue(`Status: ${statusFilter === 'all' ? 'All Statuses' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Payment Type: ${type === 'tuition' ? (paymentTypeFilter === 'all' ? 'All Types' : paymentTypeFilter.charAt(0).toUpperCase() + paymentTypeFilter.slice(1)) : 'N/A'}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Grade Level: ${gradeFilter === 'all' ? 'All Grades' : gradeFilter}`)].join(','),
-      [...emptyColumns, escapeCsvValue(`Room: ${roomFilter === 'all' ? 'All Rooms' : roomFilter}`)].join(','),
+      [...emptyColumns, escapeCsvValue(`Class: ${roomFilter === 'all' ? 'All Classes' : roomFilter}`)].join(','),
       [...emptyColumns, escapeCsvValue(`School Level: ${schoolLevelFilter === 'all' ? 'All Levels' : schoolLevelFilter}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Payment Channel: ${paymentChannelFilter === 'all' ? 'All Channels' : paymentChannelFilter}`)].join(','),
       [...emptyColumns, escapeCsvValue(`Date Range: ${dateFrom ? format(dateFrom, 'yyyy-MM-dd') : 'No start date'} to ${dateTo ? format(dateTo, 'yyyy-MM-dd') : 'No end date'}`)].join(','),
@@ -320,10 +320,10 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
         ''
       ].join(',')
     ]
-    
+
     // Create CSV content
     const csvContent = csvRows.join('\n')
-    
+
     // Create and download file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
@@ -654,8 +654,8 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => setSelectedPayment(payment)}
                         >
@@ -672,7 +672,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                             {t('paymentHistory.completePaymentInfo')} {payment.invoiceNumber}
                           </DialogDescription>
                         </DialogHeader>
-                        
+
                         <div className="space-y-6">
                           {/* Payment Summary */}
                           <div className="flex justify-between items-start">
@@ -794,16 +794,16 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious 
+              <PaginationPrevious
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
-            
+
             {/* Show first few pages */}
             {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map(page => (
               <PaginationItem key={page}>
-                <PaginationLink 
+                <PaginationLink
                   onClick={() => setCurrentPage(page)}
                   isActive={currentPage === page}
                   className="cursor-pointer"
@@ -812,18 +812,18 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                 </PaginationLink>
               </PaginationItem>
             ))}
-            
+
             {/* Show ellipsis if there are many pages */}
             {totalPages > 6 && currentPage < totalPages - 2 && (
               <PaginationItem>
                 <PaginationEllipsis />
               </PaginationItem>
             )}
-            
+
             {/* Show current page area if it's in the middle */}
             {currentPage > 3 && currentPage < totalPages - 2 && (
               <PaginationItem>
-                <PaginationLink 
+                <PaginationLink
                   onClick={() => setCurrentPage(currentPage)}
                   isActive={true}
                   className="cursor-pointer"
@@ -832,7 +832,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                 </PaginationLink>
               </PaginationItem>
             )}
-            
+
             {/* Show last few pages */}
             {totalPages > 3 && (
               <>
@@ -843,7 +843,7 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                 )}
                 {Array.from({ length: Math.min(3, totalPages) }, (_, i) => totalPages - 2 + i).filter(page => page > 3).map(page => (
                   <PaginationItem key={page}>
-                    <PaginationLink 
+                    <PaginationLink
                       onClick={() => setCurrentPage(page)}
                       isActive={currentPage === page}
                       className="cursor-pointer"
@@ -854,9 +854,9 @@ export function PaymentHistory({ type = "tuition", initialStatusFilter }: Paymen
                 ))}
               </>
             )}
-            
+
             <PaginationItem>
-              <PaginationNext 
+              <PaginationNext
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />

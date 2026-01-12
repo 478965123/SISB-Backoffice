@@ -16,13 +16,16 @@
       "Bash(git push)",
       "Bash(npm run build:*)",
       "Bash(git checkout:*)",
-      "Bash(mcp list:*)"
+      "Bash(mcp list:*)",
+      "Bash(npm i:*)",
+      "Bash(claude --version:*)",
+      "Bash(claude doctor:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

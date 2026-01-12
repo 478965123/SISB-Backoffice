@@ -80,8 +80,8 @@ const mockTrips: Trip[] = [
     description: "Educational trip to National Science Museum",
     status: "open",
     participants: [
-      { yearGroup: "Year 4", room: "Room A" },
-      { yearGroup: "Year 5", room: "Room B" }
+      { yearGroup: "Year 4", room: "Class A" },
+      { yearGroup: "Year 5", room: "Class B" }
     ],
     campus: "Thonburi",
     createdAt: "2024-01-10",
@@ -98,8 +98,8 @@ const mockTrips: Trip[] = [
     description: "Historical and cultural exploration",
     status: "full",
     participants: [
-      { yearGroup: "Year 6", room: "Room C" },
-      { yearGroup: "Year 7", room: "Room D" }
+      { yearGroup: "Year 6", room: "Class C" },
+      { yearGroup: "Year 7", room: "Class D" }
     ],
     campus: "Suvarnabhumi",
     createdAt: "2024-01-12",
@@ -116,8 +116,8 @@ const mockTrips: Trip[] = [
     description: "River cruise and temple visits",
     status: "completed",
     participants: [
-      { yearGroup: "Year 8", room: "Room E" },
-      { yearGroup: "Year 9", room: "Room F" }
+      { yearGroup: "Year 8", room: "Class E" },
+      { yearGroup: "Year 9", room: "Class F" }
     ],
     campus: "Thonburi",
     createdAt: "2024-01-05",
@@ -213,7 +213,7 @@ export function TripManagement() {
 
   const filteredTrips = trips.filter(trip => {
     const matchesSearch = trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         trip.id.toLowerCase().includes(searchQuery.toLowerCase())
+      trip.id.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || trip.status === statusFilter
     const matchesCampus = campusFilter === "all" || trip.campus === campusFilter
     return matchesSearch && matchesStatus && matchesCampus
@@ -257,10 +257,10 @@ export function TripManagement() {
     const updatedTrips = trips.map(trip =>
       trip.id === selectedTrip.id
         ? {
-            ...trip,
-            ...formData,
-            updatedAt: new Date().toISOString()
-          } as Trip
+          ...trip,
+          ...formData,
+          updatedAt: new Date().toISOString()
+        } as Trip
         : trip
     )
 
@@ -645,7 +645,7 @@ export function TripManagement() {
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="Room (e.g., Room A)"
+                    placeholder="Class (e.g., Class A)"
                     value={selectedRoom}
                     onChange={(e) => setSelectedRoom(e.target.value)}
                   />
@@ -813,7 +813,7 @@ export function TripManagement() {
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="Room (e.g., Room A)"
+                    placeholder="Class (e.g., Class A)"
                     value={selectedRoom}
                     onChange={(e) => setSelectedRoom(e.target.value)}
                   />
